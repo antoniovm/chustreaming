@@ -1,7 +1,7 @@
 '''
 Created on 06/03/2012
 
-@author: jorge
+@author: jorge, antonio
 '''
 import httplib
 conn = httplib.HTTPConnection("localhost:8000")
