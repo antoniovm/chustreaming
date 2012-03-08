@@ -19,7 +19,9 @@ MSGLEN = 1024
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("localhost", 8000))
 s.send("GET /prueba.ogg HTTP/1.1\r\n\r\n")
-f = open("/home/jorge/Escritorio/bunny.ogg", "w")
+ruta = raw_input("Introduce la ruta de destino de la captura");
+f = open(ruta, "w")
+#f = open("/home/jorge/Escritorio/bunny.ogg", "w")
 while 1:
     msg = ''
     while len(msg) < MSGLEN:
@@ -28,3 +30,4 @@ while 1:
             raise RuntimeError("socket connection broken")
         msg = msg + chunk
     print >> f, msg
+    print msg;
