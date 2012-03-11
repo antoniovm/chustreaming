@@ -1,29 +1,18 @@
 '''
 Created on 06/03/2012
 
-@author: jorge, antonio
+@author: jorge, antonio, miguel
 '''
-#import httplib
-#conn = httplib.HTTPConnection("localhost:8000")
-#conn.request("GET", "/lista.ogg")
-#r1 = conn.getresponse()
-#print r1.status, r1.reason
-#data1 = r1.read()
-#f = open('/mnt/hgfs/Chustafile/Tercer curso/Segundo cuatrimestre/Redes/Streaming/recepcion/tangerineDream.ogg', 'w')
-#print >> f, data1
-#print data1
-#conn.close()
 
 import socket
 MSGLEN = 1024
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("localhost", 8000))
 s.send("GET /prueba.ogg HTTP/1.1\r\n\r\n")
-ruta = raw_input("Introduce la ruta de destino de la captura");
+ruta = raw_input("Introduce la ruta de destino de la captura: ");
 f = open(ruta, "w")
 respuestaServidor = 0; 
 posicionNumeroMagico = -1
-#f = open("/home/loopin/Escritorio/bunny.ogg", "w")
 i = 0;
 while 1:
     msg = ''
@@ -33,6 +22,8 @@ while 1:
         if chunk == '':
             raise RuntimeError("socket connection broken")
             continue
+        
+        
         if respuestaServidor == 0: #Para buscar el numero magico solo una vez
             posicionNumeroMagico = chunk.find("OggS")
             if posicionNumeroMagico < 0:
@@ -41,8 +32,6 @@ while 1:
                 respuestaServidor = 1
                 chunk = chunk[posicionNumeroMagico:]    #Forma de indexar subcadenas          
                 
-            
-        
         msg = msg + chunk
     print >> f, msg
     i=i+1
@@ -50,5 +39,3 @@ while 1:
     if i >= 2000:
         f.close()
         break
-    
-    
