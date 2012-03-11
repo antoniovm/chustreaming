@@ -9,7 +9,7 @@ MSGLEN = 1024
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("localhost", 8000))
 s.send("GET /prueba.ogg HTTP/1.1\r\n\r\n")
-ruta = raw_input("Introduce la ruta de destino de la captura: ");
+ruta = raw_input("Introduce la ruta de destino de la captura: "); #Incluyendo nombre del archivo .ogg destino
 f = open(ruta, "w")
 respuestaServidor = 0;
 posicionNumeroMagico = -1 #Donde se guardara la posicion en la que se encuentra OggS
