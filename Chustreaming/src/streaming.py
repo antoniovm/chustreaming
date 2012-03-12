@@ -33,7 +33,8 @@ while 1:
                 chunk = chunk[posicionNumeroMagico:]    #Forma de indexar subcadenas          
                 
         msg = msg + chunk
-    print >> f, msg
+    #print >> f, msg
+    f.write(msg);
     i=i+1
     print i, " bloque obtenido"; #Para mostrar cuantos bloques de bytes vamos leyendo
    
