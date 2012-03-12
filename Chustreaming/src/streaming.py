@@ -23,7 +23,7 @@ while 1:
             raise RuntimeError("socket connection broken")
             continue
         
-        #Eliminar la cabecera HTML
+        #Eliminar la cabecera HTTP
         if respuestaServidor == 0: #Para buscar el numero magico solo una vez
             posicionNumeroMagico = chunk.find("OggS")
             if posicionNumeroMagico < 0:
