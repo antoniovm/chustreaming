@@ -9,18 +9,26 @@ MSGLEN = 1024
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("localhost", 8000))
 s.send("GET /prueba.ogg HTTP/1.1\r\n\r\n")
-ruta = raw_input("Introduce la ruta de destino de la captura: "); #Incluyendo nombre del archivo .ogg destino
-f = open(ruta, "w")
 respuestaServidor = 0;
 posicionNumeroMagico = -1 #Donde se guardara la posicion en la que se encuentra OggS
 i = 0;
+
+UDP_IP="127.0.0.1"
+UDP_PORT=5005
+
+print "UDP target IP:", UDP_IP
+print "UDP target port:", UDP_PORT
+
+sock = socket.socket( socket.AF_INET, # Internet
+                      socket.SOCK_DGRAM ) # UDP
+
 while 1:
     msg = ''
     while len(msg) < MSGLEN:
         chunk = s.recv(MSGLEN-len(msg))
         
         if chunk == '':
-            raise RuntimeError("socket connection broken")
+            print RuntimeError("socket connection broken")
             continue
         
         #Eliminar la cabecera HTTP
@@ -33,12 +41,6 @@ while 1:
                 chunk = chunk[posicionNumeroMagico:]    #Forma de indexar subcadenas          
                 
         msg = msg + chunk
-    #print >> f, msg
-    f.write(msg);
+        sock.sendto( chunk, (UDP_IP, UDP_PORT) )
     i=i+1
-    print i, " bloque obtenido"; #Para mostrar cuantos bloques de bytes vamos leyendo
-   
-    #Probamos recibiendo hasta 2000 bloques y luego cerramos el flujo del archivo
-    if i >= 2000: 
-        f.close()
-        break
+    print i, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
