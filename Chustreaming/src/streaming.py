@@ -5,10 +5,11 @@ Created on 06/03/2012
 '''
 
 import socket
+from struct import pack
 MSGLEN = 1024
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("localhost", 8000))
-s.send("GET /prueba.ogg HTTP/1.1\r\n\r\n")
+s.send("GET /prueba HTTP/1.1\r\n\r\n")
 respuestaServidor = 0;
 posicionNumeroMagico = -1 #Donde se guardara la posicion en la que se encuentra OggS
 i = 0;
@@ -28,8 +29,8 @@ while 1:
         chunk = s.recv(MSGLEN-len(msg))
         
         if chunk == '':
-            print RuntimeError("socket connection broken")
-            continue
+            raise RuntimeError("socket connection broken")
+            
         
         #Eliminar la cabecera HTTP
         if respuestaServidor == 0: #Para buscar el numero magico solo una vez
@@ -41,6 +42,9 @@ while 1:
                 chunk = chunk[posicionNumeroMagico:]    #Forma de indexar subcadenas          
                 
         msg = msg + chunk
-        sock.sendto( chunk, (UDP_IP, UDP_PORT) )
-    i=i+1
+        
+    i=(i+1)%(2**16)
+    binario = pack(">H", i) #Codificado como short big-endian
+    msg = binario + msg
+    sock.sendto( msg,(UDP_IP, UDP_PORT))
     print i, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
