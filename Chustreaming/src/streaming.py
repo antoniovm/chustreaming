@@ -8,7 +8,9 @@ import socket
 from struct import pack
 MSGLEN = 1024
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect(("localhost", 8000))
+print "Introduzca la IP del servidor"
+ruta = raw_input();
+s.connect((ruta, 8000))
 s.send("GET /prueba HTTP/1.1\r\n\r\n")
 respuestaServidor = 0;
 posicionNumeroMagico = -1 #Donde se guardara la posicion en la que se encuentra OggS
