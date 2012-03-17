@@ -5,12 +5,14 @@ Created on 15/03/2012
 '''
 import socket
 import getpass
-MSGLEN = 1024
+from struct import unpack
+MSGLEN = 1026
 i=0;
 UDP_IP="127.0.0.1"
 UDP_PORT=5005 
 sock = socket.socket( socket.AF_INET, # Internet
                       socket.SOCK_DGRAM ) # UDP
+
 sock.bind( (UDP_IP,UDP_PORT) )
 
 #ruta = raw_input("Introduce la ruta de destino de la captura: "); #Incluyendo nombre del archivo .ogg destino
@@ -28,6 +30,7 @@ while True:
         
         msg = msg + chunk;
         #print "received message:", msg
-        f.write(msg);
-    i=i+1
+    
+    i=unpack(">H", msg[:2])[0]
+    f.write(msg[2:]);
     print i, " bloque obtenido"; #Para mostrar cuantos bloques de bytes vamos leyendo
