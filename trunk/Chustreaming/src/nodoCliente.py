@@ -5,9 +5,11 @@ Created on 15/03/2012
 '''
 import socket
 import getpass
+import sys
+import os
 from struct import unpack
 MSGLEN = 1026
-i=0;
+i=0; 
 UDP_IP="127.0.0.1"
 UDP_PORT=5005 
 sock = socket.socket( socket.AF_INET, # Internet
@@ -16,7 +18,10 @@ sock = socket.socket( socket.AF_INET, # Internet
 sock.bind( (UDP_IP,UDP_PORT) )
 
 #ruta = raw_input("Introduce la ruta de destino de la captura: "); #Incluyendo nombre del archivo .ogg destino
-ruta = "/home/" + getpass.getuser() + "/Escritorio/bunny.ogg"
+if(os.name == 'nt'):
+    ruta = "C:\\Users\\" + getpass.getuser() + "\\Desktop\\bunny.ogg"
+else:
+    ruta = "/home/" + getpass.getuser() + "/Escritorio/bunny.ogg"
 f = open(ruta, "w")
 
 print "PEER STARTED"
