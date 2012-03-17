@@ -10,8 +10,8 @@ import os
 from struct import unpack
 MSGLEN = 1026
 i=0; 
-UDP_IP="127.0.0.1"
-UDP_PORT=5005 
+UDP_IP="localhost"
+UDP_PORT=12000 
 sock = socket.socket( socket.AF_INET, # Internet
                       socket.SOCK_DGRAM ) # UDP
 

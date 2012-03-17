@@ -11,13 +11,13 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print "Introduzca la IP del servidor"
 ruta = raw_input();
 s.connect((ruta, 8000))
-s.send("GET /prueba HTTP/1.1\r\n\r\n")
+s.send("GET /canal1 HTTP/1.1\r\n\r\n")
 respuestaServidor = 0;
 posicionNumeroMagico = -1 #Donde se guardara la posicion en la que se encuentra OggS
 i = 0;
 
-UDP_IP="127.0.0.1"
-UDP_PORT=5005
+UDP_IP="localhost"
+UDP_PORT=12000
 
 print "UDP target IP:", UDP_IP
 print "UDP target port:", UDP_PORT
