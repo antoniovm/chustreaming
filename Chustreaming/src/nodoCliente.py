@@ -1,15 +1,15 @@
 '''
 Created on 15/03/2012
 
-@author: jorge
+@author: jorge, antonio, miguel
 '''
 import socket
 import getpass
-import sys
-import os
-from struct import unpack
+import os               #Para obtener datos del sistema operativo
+from struct import unpack #Para desempaquetar cadenas de bytes
 MSGLEN = 1026
-i=0; 
+numeroBloque=0;
+i=0;  
 UDP_IP="localhost"
 UDP_PORT=12000 
 sock = socket.socket( socket.AF_INET, # Internet
@@ -18,7 +18,7 @@ sock = socket.socket( socket.AF_INET, # Internet
 sock.bind( (UDP_IP,UDP_PORT) )
 
 #ruta = raw_input("Introduce la ruta de destino de la captura: "); #Incluyendo nombre del archivo .ogg destino
-if(os.name == 'nt'):
+if(os.name == 'nt'): #Windows
     ruta = "C:\\Users\\" + getpass.getuser() + "\\Desktop\\bunny.ogg"
 else:
     ruta = "/home/" + getpass.getuser() + "/Escritorio/bunny.ogg"
@@ -28,14 +28,15 @@ print "PEER STARTED"
 while True:
     msg = ''
     while len(msg) < MSGLEN:
-        chunk, addr = sock.recvfrom(MSGLEN-len(msg)) # buffer size is 1024 bytes
+        chunk = sock.recv(MSGLEN-len(msg)) 
         if chunk == '':
             print RuntimeError("socket connection broken")
             continue
         
-        msg = msg + chunk;
+        msg = msg + chunk
         #print "received message:", msg
     
-    i=unpack(">H", msg[:2])[0]
-    f.write(msg[2:]);
-    print i, " bloque obtenido"; #Para mostrar cuantos bloques de bytes vamos leyendo
+    numeroBloque=unpack(">H", msg[:2])[0] #Seleccionamos los 2 primeros bytes
+    f.write(msg[2:]); #Escribimos el resto en el fichero
+    i = i +1
+    print i, " Iteracion - ", numeroBloque, " bloque obtenido"; 
