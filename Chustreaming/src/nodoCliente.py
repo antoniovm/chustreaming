@@ -10,7 +10,7 @@ from struct import unpack #Para desempaquetar cadenas de bytes
 MSGLEN = 1026
 numeroBloque=0;
 i=0;  
-UDP_IP="localhost"
+UDP_IP=""
 UDP_PORT=8080 
 sock = socket.socket( socket.AF_INET, # Internet
                       socket.SOCK_DGRAM ) # UDP
