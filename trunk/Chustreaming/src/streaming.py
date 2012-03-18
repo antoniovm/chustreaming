@@ -14,7 +14,7 @@ s.connect((ruta, 8000))
 s.send("GET /canal1 HTTP/1.1\r\n\r\n")
 respuestaServidor = 0;
 posicionNumeroMagico = -1 #Donde se guardara la posicion en la que se encuentra OggS
-i = 0;
+numeroBloque = 0;
 
 UDP_IP="localhost"
 UDP_PORT=12000
@@ -45,8 +45,8 @@ while 1:
                 
         msg = msg + chunk
         
-    i=(i+1)%(2**16)
-    binario = pack(">H", i) #Codificado como short big-endian
+    numeroBloque=(numeroBloque+1)%(2**16)
+    binario = pack(">H", numeroBloque) #Codificado como short big-endian
     msg = binario + msg
     sock.sendto( msg,(UDP_IP, UDP_PORT))
-    print i, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
+    print numeroBloque, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
