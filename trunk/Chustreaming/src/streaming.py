@@ -17,7 +17,7 @@ respuestaServidor = 0;
 posicionNumeroMagico = -1 #Donde se guardara la posicion en la que se encuentra OggS
 numeroBloque = 0;
 
-UDP_IP="localhost"
+UDP_IP="87.216.135.207"
 UDP_PORT=8080
 
 print "UDP target IP:", UDP_IP
