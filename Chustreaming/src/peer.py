@@ -11,7 +11,6 @@ from struct import unpack #Para desempaquetar cadenas de bytes
 class peer:
     def __init__(self, ip, puerto):
         self.MSGLEN = 1026
-        self.numeroBloque=0;
           
         self.UDP_PORT=puerto
         self.socketUDP = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
@@ -54,6 +53,7 @@ class peer:
                 msg = msg + chunk
                 #print "received message:", msg
             
+            numeroBloque=0
             numeroBloque=unpack(">H", msg[:2])[0] #Seleccionamos los 2 primeros bytes
             f.write(msg[2:]);                       #Escribimos el resto en el fichero
             i = i +1
