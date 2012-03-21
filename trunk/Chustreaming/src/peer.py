@@ -37,6 +37,6 @@ while True:
         #print "received message:", msg
     
     numeroBloque=unpack(">H", msg[:2])[0] #Seleccionamos los 2 primeros bytes
-    f.write(msg[2:]); #Escribimos el resto en el fichero
+    f.write(msg[2:]);                       #Escribimos el resto en el fichero
     i = i +1
     print i, " Iteracion - ", numeroBloque, " bloque obtenido"; 
