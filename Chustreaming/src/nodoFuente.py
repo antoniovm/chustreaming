@@ -28,8 +28,11 @@ class nodoFuente:
     def aceptarConexionTCP(self):
         (self.socketClienteTCP, self.direccionCliente) = self.socketServerTCP.accept()
         
-    def eliminarCabeceraHTTP(self):
+    def enviarClienteUDP(self):
+        self.socketClienteUDP = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socketClienteUDP.sendto(msg, self.direccionCliente)
         
+    def eliminarCabeceraHTTP(self):
         respuestaServidor = 0;
         posicionNumeroMagico = -1 #Donde se guardara la posicion en la que se encuentra OggS
     
