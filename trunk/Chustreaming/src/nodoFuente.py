@@ -26,28 +26,34 @@ print "UDP target port:", UDP_PORT
 sock = socket.socket( socket.AF_INET, # Internet
                       socket.SOCK_DGRAM ) # UDP
 
-while 1:
-    msg = ''
-    while len(msg) < MSGLEN:
-        chunk = s.recv(MSGLEN-len(msg))
-        
-        if chunk == '':
-            raise RuntimeError("socket connection broken")
+
+    
+def hiloLeerIcecast():
+    while 1:
+        msg = ''
+        while len(msg) < MSGLEN:
+            chunk = s.recv(MSGLEN-len(msg))
             
-        
-        #Eliminar la cabecera HTTP
-        if respuestaServidor == 0: #Para buscar el numero magico solo una vez
-            posicionNumeroMagico = chunk.find("OggS")
-            if posicionNumeroMagico < 0:
-                continue
-            else:
-                respuestaServidor = 1
-                chunk = chunk[posicionNumeroMagico:]    #Forma de indexar subcadenas          
+            if chunk == '':
+                raise RuntimeError("socket connection broken")
                 
-        msg = msg + chunk
+            
+            #Eliminar la cabecera HTTP
+            if respuestaServidor == 0: #Para buscar el numero magico solo una vez
+                posicionNumeroMagico = chunk.find("OggS")
+                if posicionNumeroMagico < 0:
+                    continue
+                else:
+                    respuestaServidor = 1
+                    chunk = chunk[posicionNumeroMagico:]    #Forma de indexar subcadenas          
+                    
+            msg = msg + chunk
+            
+        numeroBloque=(numeroBloque+1)%(2**16)
+        binario = pack(">H", numeroBloque) #Codificado como short big-endian
+        msg = binario + msg
+        sock.sendto( msg,(UDP_IP, UDP_PORT))
+        print numeroBloque, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
         
-    numeroBloque=(numeroBloque+1)%(2**16)
-    binario = pack(">H", numeroBloque) #Codificado como short big-endian
-    msg = binario + msg
-    sock.sendto( msg,(UDP_IP, UDP_PORT))
-    print numeroBloque, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
+hiloLeerIcecast();
+    
