@@ -76,7 +76,7 @@ class NodoFuente:
             self.socketClienteTCP.send(msg)
             print numeroBloque, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
             i += 1
-            print "Vuelta NodoFuente ", i
+            print "Vuelta NodoFuente ", i, " ", msg[0]
         
                                
     def hiloLeerIcecast(self):
