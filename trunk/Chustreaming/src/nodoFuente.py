@@ -48,6 +48,7 @@ class NodoFuente:
             return chunk          
                         
     def enviarCabeceraOgg(self):
+        f = open("C:\\Users\\" + "Loop" + "\\Desktop\\" + "serverBunny" + ".ogg", "w")
         i = 0
         numeroBloque = 0
         respuestaServidor = 0
@@ -74,14 +75,17 @@ class NodoFuente:
             #msg = binario + msg
             #self.socketClienteUDP.sendto( msg, (self.direccionCliente[0], 12000))
             self.socketClienteTCP.send(msg)
+            f.write(msg);
             print numeroBloque, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
             i += 1
             print "Vuelta NodoFuente ", i, " ", msg[0]
+        f.close()
         
                                
     def hiloLeerIcecast(self):
         respuestaServidor = 1;
         numeroBloque = 0;
+        f = open("C:\\Users\\" + "Loop" + "\\Desktop\\" + "serverBunny" + ".ogg", "a")
         while True:
             msg = ''
             while len(msg) < self.MSGLEN:
@@ -103,6 +107,7 @@ class NodoFuente:
             numeroBloque=(numeroBloque+1)%(2**16)
             binario = pack(">H", numeroBloque) #Codificado como short big-endian
             msg = binario + msg
+            f.write(msg[2:]);
             self.socketClienteUDP.sendto( msg, (self.direccionCliente[0], 12000))
             print numeroBloque, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
             
