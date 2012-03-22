@@ -38,10 +38,8 @@ class NodoFuente:
         thread.start_new_thread(self.hiloLeerIcecast())
         
     def eliminarCabeceraHTTP(self, chunk):
-        posicionNumeroMagico = -1 #Donde se guardara la posicion en la que se encuentra OggS                
-                
         #Eliminar la cabecera HTTP
-        posicionNumeroMagico = chunk.find("OggS")
+        posicionNumeroMagico = chunk.find("OggS") #Posicion en la que se encuentra OggS 
         if posicionNumeroMagico < 0:
             chunk = ''
             return chunk
