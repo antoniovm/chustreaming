@@ -71,18 +71,19 @@ class NodoFuente:
                               
                 msg = msg + chunk
                 
-            numeroBloque=(numeroBloque+1)%(2**16)
-            binario = pack(">H", numeroBloque) #Codificado como short big-endian
-            msg = binario + msg
+            #numeroBloque=(numeroBloque+1)%(2**16)
+            #binario = pack(">H", numeroBloque) #Codificado como short big-endian
+            #msg = binario + msg
             #self.socketClienteUDP.sendto( msg, (self.direccionCliente[0], 12000))
             self.socketClienteTCP.send(msg)
             print numeroBloque, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
             i += 1
+            print "Vuelta NodoFuente ", i
         
                                
     def hiloLeerIcecast(self):
         respuestaServidor = 1;
-        numeroBloque = 10;
+        numeroBloque = 0;
         while True:
             msg = ''
             while len(msg) < self.MSGLEN:
