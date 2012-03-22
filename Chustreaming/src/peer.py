@@ -79,6 +79,6 @@ class Peer:
         return ruta
     
 
-peer = Peer('172.20.37.162', 12000)
+peer = Peer('localhost', 12000)
 peer.conectarTCP()
 peer.recibirFlujoOggUDP()
