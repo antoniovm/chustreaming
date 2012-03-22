@@ -29,10 +29,10 @@ class Peer:
     def recibirCabeceraOggTCP(self):
         i = 0
         cabecera = ''
-        while i < 9:
+        while i < 10:
             msg = ''
-            while len(msg) < self.MSGLEN:
-                chunk = self.socketTCP.recv(self.MSGLEN-len(msg))
+            while len(msg) < self.MSGLEN-2:
+                chunk = self.socketTCP.recv(self.MSGLEN-2-len(msg))
                 if chunk == '':
                     print RuntimeError("socket connection broken cabecera TCP")
                     continue
@@ -79,6 +79,6 @@ class Peer:
         return ruta
     
 
-peer = Peer('localhost', 12000)
+peer = Peer('172.20.37.162', 12000)
 peer.conectarTCP()
 peer.recibirFlujoOggUDP()
