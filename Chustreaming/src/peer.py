@@ -25,10 +25,11 @@ class Peer:
         self.socketTCP.connect((self.TCP_IP, self.TCP_PORT))
         print "Conexion TCP establecida con ", self.TCP_IP
     
+    #Recibe igual que el flujo UDP pero solo 10 veces y mediante el socketTCP
     def recibirCabeceraOggTCP(self):
         i = 0
         cabecera = ''
-        while i < 10:
+        while i < 9:
             msg = ''
             while len(msg) < self.MSGLEN:
                 chunk = self.socketTCP.recv(self.MSGLEN-len(msg))
@@ -38,6 +39,7 @@ class Peer:
                 msg = msg + chunk
             cabecera = cabecera + msg
             i += 1
+            print "Vuelta Peer ", i
         return cabecera
     
     def recibirFlujoOggUDP(self):
@@ -46,6 +48,7 @@ class Peer:
         i = 0
         
         f.write(self.recibirCabeceraOggTCP())
+        print "Cabecera Ogg escrita"
         while True:
             msg = ''
             while len(msg) < self.MSGLEN:
@@ -66,7 +69,7 @@ class Peer:
             
     def escribirPorTeclado(self):
         #return raw_input("Introduzca algo por teclado: ")
-        return "bunny"
+        return "bunny" #para no escribir todo el rato haciendo pruebas
     
     def getEscritorio(self, nombreArchivo):
         if(os.name == 'nt'): #Windows
