@@ -59,7 +59,15 @@ class Peer:
         f = open(ruta, "w")
         i = 0
         
-        f.write(self.recibirCabeceraOggTCP())
+        cabe = self.recibirCabeceraOggTCP()
+        
+        while i < 10:
+            self.socketClientePlayer.send(cabe[1024*i:1024*(i+1)])
+            i += 1
+        
+        i = 0
+        
+        f.write(cabe)
         print "Cabecera Ogg escrita"
         while True:
             msg = ''
