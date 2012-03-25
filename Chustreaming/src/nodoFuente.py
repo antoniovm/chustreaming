@@ -39,12 +39,12 @@ class NodoFuente:
         
     def eliminarCabeceraHTTP(self, chunk):
         #Eliminar la cabecera HTTP
-        posicionNumeroMagico = chunk.find("OggS") #Posicion en la que se encuentra OggS 
-        if posicionNumeroMagico < 0:
-            chunk = ''
-            return chunk
-        else:
-            chunk = chunk[posicionNumeroMagico:]    #Forma de indexar subcadenas
+        #posicionNumeroMagico = chunk.find("OggS") #Posicion en la que se encuentra OggS 
+        #if posicionNumeroMagico < 0:
+        #    chunk = ''
+        #    return chunk
+        #else:
+        #    chunk = chunk[posicionNumeroMagico:]    #Forma de indexar subcadenas
             return chunk          
                         
     def enviarCabeceraOgg(self):
