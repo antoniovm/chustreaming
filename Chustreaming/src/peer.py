@@ -19,20 +19,32 @@ class Peer:
         
         self.TCP_IP=ip
         self.TCP_PORT=puerto
-        self.socketTCP = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
+        self.socketSourceTCP = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
         
-    def conectarTCP(self):
-        self.socketTCP.connect((self.TCP_IP, self.TCP_PORT))
+        self.socketPlayerTCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #Socket que espera conexion VLC
+        self.socketPlayerTCP.bind(('', 12001))
+        self.socketPlayerTCP.listen(1)
+        self.direccionPlayer = '' #(ip, puerto) de haber hecho accept
+        self.socketClientePlayer = None #Socket para comunicarse con VLC, repuesta al hacer accept con socketPlayerTCP
+        
+    def aceptarConexionPlayerTCP(self):
+        print "Esperando aceptar conexion TCP por parte del player VLC"
+        (self.socketClientePlayer, self.direccionPlayer) = self.socketPlayerTCP.accept()
+        print "Conexion con el player aceptada"
+        print "Direccion player: ", self.direccionPlayer
+        
+    def conectarSourceTCP(self):
+        self.socketSourceTCP.connect((self.TCP_IP, self.TCP_PORT))
         print "Conexion TCP establecida con ", self.TCP_IP
     
-    #Recibe igual que el flujo UDP pero solo 10 veces y mediante el socketTCP
+    #Recibe igual que el flujo UDP pero solo 10 veces y mediante el socketSourceTCP
     def recibirCabeceraOggTCP(self):
         i = 0
         cabecera = ''
         while i < 10:
             msg = ''
             while len(msg) < self.MSGLEN-2:
-                chunk = self.socketTCP.recv(self.MSGLEN-2-len(msg))
+                chunk = self.socketSourceTCP.recv(self.MSGLEN-2-len(msg))
                 if chunk == '':
                     print RuntimeError("socket connection broken cabecera TCP")
                     continue
@@ -62,7 +74,9 @@ class Peer:
             
             numeroBloque=0
             numeroBloque=unpack(">H", msg[:2])[0] #Seleccionamos los 2 primeros bytes
-            f.write(msg[2:]);                       #Escribimos el resto en el fichero
+            f.write(msg[2:])                       #Escribimos el resto en el fichero
+            msg2 = msg[2:]
+            self.socketClientePlayer.send(msg2)
             i = i +1
             print i, " Iteracion - ", numeroBloque, " bloque obtenido";
             
@@ -80,5 +94,6 @@ class Peer:
     
 
 peer = Peer('localhost', 12000)
-peer.conectarTCP()
+peer.aceptarConexionPlayerTCP()
+peer.conectarSourceTCP()
 peer.recibirFlujoOggUDP()
