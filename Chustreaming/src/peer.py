@@ -34,6 +34,7 @@ class Peer:
         print "Direccion player: ", self.direccionPlayer
         
     def conectarSourceTCP(self):
+        print "Esperando respuesta del servidor... "
         self.socketSourceTCP.connect((self.TCP_IP, self.TCP_PORT))
         print "Conexion TCP establecida con ", self.TCP_IP
     
@@ -51,7 +52,7 @@ class Peer:
                 msg = msg + chunk
             cabecera = cabecera + msg
             i += 1
-            print "Vuelta Peer ", i
+            print "Recibido paquete de cabecera ", i
         return cabecera
     
     def recibirFlujoOggUDP(self):
