@@ -102,6 +102,7 @@ class Peer:
     
 
 peer = Peer('localhost', 12000)
+#peer = Peer('87.216.135.207', 12000)
 peer.aceptarConexionPlayerTCP()
 peer.conectarSourceTCP()
 peer.recibirFlujoOggUDP()
