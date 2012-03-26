@@ -94,8 +94,8 @@ class NodoFuente:
                 chunk = self.socketIcecast.recv(self.MSGLEN-len(msg))
                 
                 if chunk == '':
-                    print RuntimeError("socket connection broken icecast")
-                    continue
+                    raise RuntimeError("socket connection broken icecast")
+                    
                 
                 msg = msg + chunk
                 
@@ -108,7 +108,7 @@ class NodoFuente:
             msg = binario + msg
             #f.write(msg[2:]);
             if (self.socketClienteUDP is not None):
-                self.socketClienteUDP.sendto(msg, self.direccionCliente)
+                self.socketClienteUDP.sendto(msg, (self.direccionCliente[0],12000))
                 print numeroBloque, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
             
 
