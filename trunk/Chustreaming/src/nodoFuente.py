@@ -25,6 +25,7 @@ class NodoFuente:
     def conectarIcecast(self):
         self.socketIcecast.connect(('localhost', 8000))
         self.socketIcecast.send("GET /canal1 HTTP/1.1\r\n\r\n")
+        print "Conexion establecida con Icecast."
         
     def getPaquete(self, i):
         return self.cabecera[1024*i:1024*(i+1)];
@@ -38,6 +39,8 @@ class NodoFuente:
         print "Enviando cabecera..."
         while i < tamCab:
             self.socketClienteTCP.send(self.getPaquete(i))
+            print "Paquete ", i, " enviado."
+            i += 1
         print "Cabecera enviada."        
         self.enviarClienteUDP()
         
@@ -76,15 +79,13 @@ class NodoFuente:
             #self.socketClienteTCP.send(msg)
             #f.write(msg);
             self.cabecera += msg
-            print numeroBloque, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
             i += 1
-            print "Vuelta NodoFuente ", i, " ", msg[0]
+            print "Recibido bloque ", i
         #f.close()
         
 
         
     def hiloLeerIcecast(self):
-        respuestaServidor = 1;
         numeroBloque = 0;
         #f = open("C:\\Users\\" + "Loop" + "\\Desktop\\" + "serverBunny" + ".ogg", "a")
         while True:
@@ -98,8 +99,7 @@ class NodoFuente:
                 
                 msg = msg + chunk
                 
-                if (self.socketClienteUDP is not None):
-                    self.socketClienteUDP.sendto(msg, self.direccionCliente)
+                
                               
                 
                 
@@ -107,14 +107,15 @@ class NodoFuente:
             binario = pack(">H", numeroBloque) #Codificado como short big-endian
             msg = binario + msg
             #f.write(msg[2:]);
-            self.socketClienteUDP.sendto( msg, (self.direccionCliente[0], 12000))
-            print numeroBloque, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
+            if (self.socketClienteUDP is not None):
+                self.socketClienteUDP.sendto(msg, self.direccionCliente)
+                print numeroBloque, " bloque enviado"; #Para mostrar cuantos bloques de bytes vamos leyendo
             
 
 nodoFuente = NodoFuente()
 nodoFuente.conectarIcecast()
 nodoFuente.recibirCabecera()
-thread.start_new_thread(nodoFuente.aceptarConexionTCP(10))
+thread.start_new_thread(nodoFuente.aceptarConexionTCP,(10,))
 nodoFuente.hiloLeerIcecast()
 
         
