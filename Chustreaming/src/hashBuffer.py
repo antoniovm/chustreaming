@@ -4,7 +4,7 @@ Created on 28/03/2012
 @author: jorge, antonio, miguel
 '''
 
-class hashBuffer:
+class HashBuffer:
     def __init__(self, tam):
         self.tam = tam
         self.buffer = [None] * tam
