@@ -102,7 +102,7 @@ class Peer:
         return ruta
     
 
-peer = Peer('localhost', 12000)
+peer = Peer('172.20.45.63', 12000)
 #peer = Peer('87.216.135.207', 12000)
 peer.aceptarConexionPlayerTCP()
 peer.conectarSourceTCP()
