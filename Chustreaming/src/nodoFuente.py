@@ -8,6 +8,7 @@ import socket
 import thread
 from struct import pack
 
+
 class NodoFuente:
     def __init__(self):
         self.MSGLEN = 1024
