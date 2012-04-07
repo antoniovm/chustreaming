@@ -14,7 +14,7 @@ class HashBuffer:
         self.tam = tam
         self.buffer = [None] * tam
         self.num = 0
-        self.cabeza = 0
+        self.cola = 0
         self.empezarLeer = Semaphore(0)
         
         self.elementoDisponible = Semaphore(0) #0
@@ -34,10 +34,10 @@ class HashBuffer:
     def pop(self):
         self.elementoDisponible.acquire()
         self.exmut.acquire()
-        msg = self.buffer[self.cabeza%self.tam]
-        self.buffer[self.cabeza%self.tam] = None
-        self.cabeza += 1
-        self.cabeza = self.cabeza%self.tam
+        msg = self.buffer[self.cola%self.tam]
+        self.buffer[self.cola%self.tam] = None
+        self.cola += 1
+        self.cola = self.cola%self.tam
         self.num -= 1
         print "Pop ", msg 
         self.exmut.release()
