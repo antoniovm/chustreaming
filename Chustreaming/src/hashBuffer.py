@@ -22,9 +22,9 @@ class HashBuffer:
         msg = self.buffer[self.cola%self.tam]
         self.buffer[self.cola%self.tam] = None
         self.cola = (self.cola+1)%self.tam
-        self.num -= 1
         if msg == None:
             return ""
+        self.num -= 1
         return msg
     
     def buffering(self, booleano):

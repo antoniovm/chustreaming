@@ -106,8 +106,10 @@ class Peer:
             self.buffer.push(numeroBloque, msg2)
             
             f.write(msg2)
-                                  
-            self.socketClientePlayer.send(self.buffer.pop())
+            pop = self.buffer.pop()
+            if pop == "":
+                continue
+            self.socketClientePlayer.send(pop)
             i = i +1
             print i, " Iteracion - ", numeroBloque, " bloque obtenido";
             
