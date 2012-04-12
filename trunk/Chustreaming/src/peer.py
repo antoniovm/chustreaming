@@ -23,8 +23,9 @@ class Peer:
         self.TCP_PORT=puerto
         self.socketSourceTCP = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
         
+        self.PLAYER_PORT=12001
         self.socketPlayerTCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #Socket que espera conexion VLC
-        self.socketPlayerTCP.bind(('', 12001))
+        self.socketPlayerTCP.bind(('', self.PLAYER_PORT))
         self.socketPlayerTCP.listen(1)
         self.direccionPlayer = '' #(ip, puerto) de haber hecho accept
         self.socketClientePlayer = None #Socket para comunicarse con VLC, repuesta al hacer accept con socketPlayerTCP
@@ -33,7 +34,7 @@ class Peer:
         
     def aceptarConexionPlayerTCP(self):
         print "Esperando aceptar conexion TCP por parte del player VLC"
-        thread.start_new(self.abrirVLC, ())
+        #thread.start_new(self.abrirVLC, ())
         (self.socketClientePlayer, self.direccionPlayer) = self.socketPlayerTCP.accept()
         print "Conexion con el player aceptada"
         print "Direccion player: ", self.direccionPlayer
@@ -127,9 +128,9 @@ class Peer:
     
     def abrirVLC(self):
         if(os.name == 'nt'): #Windows
-            os.system('"C:\\Program Files (x86)\\VideoLAN\\vlc\\vlc" http://localhost:12001')
+            os.system('"C:\\Program Files (x86)\\VideoLAN\\vlc\\vlc" http://localhost:'+self.PLAYER_PORT)
         else:
-            os.system('vlc http://localhost:12001')
+            os.system('vlc http://localhost:'+self.PLAYER_PORT)
              
 peer = Peer('localhost', 12000)
 #peer = Peer('87.216.135.207', 12000)

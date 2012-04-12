@@ -16,7 +16,7 @@ class HashBuffer:
         if self.cola == -1:
             self.cola = id 
         self.buffer[id%self.tam] = msg
-        self.num = min((self.num+1,self.tam))
+        self.num = min((self.num+1,self.tam)) 
         
     def pop(self):
         msg = self.buffer[self.cola%self.tam]
