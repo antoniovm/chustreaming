@@ -12,6 +12,9 @@ from struct import pack
 class NodoFuente:
     def __init__(self):
         self.MSGLEN = 1024
+        
+        self.listaPeers = []
+        
         self.cabecera = ""
         self.socketIcecast = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
@@ -32,21 +35,23 @@ class NodoFuente:
         return self.cabecera[1024*i:1024*(i+1)];
         
     def aceptarConexionTCP(self, tamCab):
-        i=0
-        print "Esperando aceptar conexion TCP por parte del peer"
-        (self.socketClienteTCP, self.direccionCliente) = self.socketServerTCP.accept()
-        print "Conexion aceptada"
-        print "Direccion cliente: ", self.direccionCliente
-        print "Enviando cabecera..."
-        while i < tamCab:
-            self.socketClienteTCP.send(self.getPaquete(i))
-            print "Paquete ", i, " enviado."
-            i += 1
-        print "Cabecera enviada."        
-        self.enviarClienteUDP()
+        while True:
+            i=0
+            print "Esperando aceptar conexion TCP por parte del peer"
+            self.listaPeers.append(self.socketServerTCP.accept())
+            print "Conexion aceptada"
+            print "Direccion cliente: ", self.direccionCliente
+            print "Enviando cabecera..."
+            while i < tamCab:
+                self.listaPeers[len(self.listaPeers)-1].send(self.getPaquete(i))
+                print "Paquete ", i, " enviado."
+                i += 1
+            print "Cabecera enviada."        
+            self.enviarClienteUDP(self.listaPeers[len(self.listaPeers)-1])
         
-    def enviarClienteUDP(self):
-        self.socketClienteUDP = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    def enviarClienteUDP(self, socketPeer):
+        #self.socketClienteUDP = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        socketPeer = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         #self.socketClienteUDP.sendto(msg, self.direccionCliente)
         
         
