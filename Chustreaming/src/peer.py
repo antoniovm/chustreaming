@@ -13,7 +13,9 @@ from hashBuffer import HashBuffer
 class Peer:
     def __init__(self, ip, puerto):
         self.MSGLEN = 1026
-          
+        
+        self.listaPeers = []
+        
         self.UDP_PORT=puerto
         self.socketUDP = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
         self.socketUDP.bind( ('', self.UDP_PORT) )
