@@ -11,23 +11,21 @@ from logging import thread
 from hashBuffer import HashBuffer
 
 class Peer:
-    def __init__(self, ip, puerto):
+    def __init__(self):
         self.MSGLEN = 1026
         
-        self.listaPeers = []
+        self.direcPeers = []
         
-        self.UDP_PORT=puerto
         self.socketUDP = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
-        self.socketUDP.bind( ('', self.UDP_PORT) )
+        self.socketUDP.bind( ('', 0))#Puero 0 = el sistema operativo elige uno libre
+        self.puerto = self.socketUDP.getsockname()[1]
         print "SocketUDP enlazado"
         
-        self.TCP_IP=ip
-        self.TCP_PORT=puerto
         self.socketSourceTCP = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
         
-        self.PLAYER_PORT=12001
         self.socketPlayerTCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #Socket que espera conexion VLC
-        self.socketPlayerTCP.bind(('', self.PLAYER_PORT))
+        self.socketPlayerTCP.bind(('', self.puerto)) 
+
         self.socketPlayerTCP.listen(1)
         self.direccionPlayer = '' #(ip, puerto) de haber hecho accept
         self.socketClientePlayer = None #Socket para comunicarse con VLC, repuesta al hacer accept con socketPlayerTCP
@@ -36,15 +34,15 @@ class Peer:
         
     def aceptarConexionPlayerTCP(self):
         print "Esperando aceptar conexion TCP por parte del player VLC"
-        #thread.start_new(self.abrirVLC, ())
+        thread.start_new(self.abrirVLC, ())
         (self.socketClientePlayer, self.direccionPlayer) = self.socketPlayerTCP.accept()
         print "Conexion con el player aceptada"
         print "Direccion player: ", self.direccionPlayer
         
-    def conectarSourceTCP(self):
+    def conectarSourceTCP(self, ip, puerto):
         print "Esperando respuesta del servidor... "
-        self.socketSourceTCP.connect((self.TCP_IP, self.TCP_PORT))
-        print "Conexion TCP establecida con ", self.TCP_IP
+        self.socketSourceTCP.connect((ip, puerto))
+        print "Conexion TCP establecida con ", (ip, puerto)
     
     #Recibe igual que el flujo UDP pero solo 10 veces y mediante el socketSourceTCP
     def recibirCabeceraOggTCP(self):
@@ -79,11 +77,43 @@ class Peer:
             
             msg = msg + chunk
         return msg
+    
+    def recibirPeersConectados(self):
+        recv = self.socketSourceTCP.recv(2)
+        recv = unpack(">H", recv)[0]
+        i = 0
+        j = 0
+        
+        ip = ""
+        puerto = 0
+        print "Peers conectados: ", recv
+        
+        while i < recv:
+            recv = self.leerSocket(self.socketSourceTCP, 12)
+            
+            while j < 4:
+                ip += str(unpack(">H", recv[j*2:(j+1)*2])[0])+"."
+                j += 1
+            ip = ip[:-1]
+            
+            puerto = unpack(">I",recv[8:12])[0]
+            
+            self.direcPeers.append((ip,puerto))
+            
+            ip = ""
+            
+            i += 1
+            
+            print recv
+        
         
     def recibirFlujoOggUDP(self):
         ruta = self.getEscritorio(self.escribirPorTeclado())
-        f = open(ruta, "w")
+        f = open(ruta, "wb")
         i = 0
+        
+        print "Recibiendo lista de direcciones de peers conectados..."
+        self.recibirPeersConectados()
         
         cabe = self.recibirCabeceraOggTCP()
         
@@ -130,12 +160,12 @@ class Peer:
     
     def abrirVLC(self):
         if(os.name == 'nt'): #Windows
-            os.system('"C:\\Program Files (x86)\\VideoLAN\\vlc\\vlc" http://localhost:'+self.PLAYER_PORT)
+            os.system('"C:\\Program Files (x86)\\VideoLAN\\vlc\\vlc" --verbose=-1 http://localhost:'+str(self.socketPlayerTCP.getsockname()[1]))
         else:
-            os.system('vlc http://localhost:'+self.PLAYER_PORT)
+            os.system('vlc --verbose=-1 http://localhost:'+str(self.socketPlayerTCP.getsockname()[1]))
              
-peer = Peer('localhost', 12000)
+peer = Peer()
 #peer = Peer('87.216.135.207', 12000)
 peer.aceptarConexionPlayerTCP()
-peer.conectarSourceTCP()
+peer.conectarSourceTCP('localhost', 12000)
 peer.recibirFlujoOggUDP()
