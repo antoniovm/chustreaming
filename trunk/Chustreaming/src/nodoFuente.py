@@ -9,9 +9,12 @@ import thread
 from struct import pack
 
 
+
 class NodoFuente:
     def __init__(self):
         self.MSGLEN = 1024
+        
+        self.PUERTO_POR_DEFECTO = 12000
         
         self.direcPeers = []
         self.indiceDirec = 0
@@ -21,9 +24,9 @@ class NodoFuente:
         
         self.socketServerTCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #socket TCP cabecera Ogg
         self.socketClientesUDP = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
-        self.socketClientesUDP.bind( ('', 0))#Puero 0 = el sistema operativo elige uno libre
+        self.socketClientesUDP.bind(('', self.PUERTO_POR_DEFECTO ))
         
-        self.socketServerTCP.bind(('', 12000))
+        self.socketServerTCP.bind(('', self.PUERTO_POR_DEFECTO ))
         self.socketServerTCP.listen(256)
         
     def conectarIcecast(self):
@@ -81,6 +84,7 @@ class NodoFuente:
             binario = self.convertirBinarioIPPuerto(i) #Convertimos la direccion en una cadena binaria para ue sea de longitud fija
             print len(binario)
             socketPeer.send(binario)
+            
             
     def convertirBinarioIPPuerto(self,(ip,puerto)):
         sep = ip.split(".")
