@@ -17,14 +17,14 @@ class Peer:
         self.direcPeers = []
         
         self.socketUDP = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
-        self.socketUDP.bind( ('', 0))#Puero 0 = el sistema operativo elige uno libre
-        self.puerto = self.socketUDP.getsockname()[1]
+        #self.socketUDP.bind(('', 0))#Puero 0 = el sistema operativo elige uno libre
+        #self.puerto = self.socketUDP.getsockname()[1]
         print "SocketUDP enlazado"
         
         self.socketSourceTCP = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
         
         self.socketPlayerTCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #Socket que espera conexion VLC
-        self.socketPlayerTCP.bind(('', self.puerto)) 
+        self.socketPlayerTCP.bind(('', 0)) 
 
         self.socketPlayerTCP.listen(1)
         self.direccionPlayer = '' #(ip, puerto) de haber hecho accept
@@ -42,6 +42,7 @@ class Peer:
     def conectarSourceTCP(self, ip, puerto):
         print "Esperando respuesta del servidor... "
         self.socketSourceTCP.connect((ip, puerto))
+        self.socketUDP.bind(("",self.socketSourceTCP.getsockname()[1]))
         print "Conexion TCP establecida con ", (ip, puerto)
     
     #Recibe igual que el flujo UDP pero solo 10 veces y mediante el socketSourceTCP
@@ -58,7 +59,9 @@ class Peer:
     def bufferIn(self):
         i = 0
         while i<256:
+            print self.socketUDP.getsockname()
             msg = self.leerSocket(self.socketUDP, self.MSGLEN) #Recibimos
+            print "Bloque ", self.separarID(msg)[0]," encolado"
             (id,msg)=self.separarID(msg)    #Separamos el numero de bloque del mensaje
             self.buffer.push(id, msg)   #"Encolamos"
             i+=1
@@ -80,15 +83,15 @@ class Peer:
     
     def recibirPeersConectados(self):
         recv = self.socketSourceTCP.recv(2)
-        recv = unpack(">H", recv)[0]
+        numConect = unpack(">H", recv)[0]
         i = 0
         j = 0
         
         ip = ""
         puerto = 0
-        print "Peers conectados: ", recv
+        print "Peer conectado: ", numConect
         
-        while i < recv:
+        while i < numConect:
             recv = self.leerSocket(self.socketSourceTCP, 12)
             
             while j < 4:
@@ -99,12 +102,12 @@ class Peer:
             puerto = unpack(">I",recv[8:12])[0]
             
             self.direcPeers.append((ip,puerto))
-            
+            print (ip,puerto)
             ip = ""
             
             i += 1
             
-            print recv
+            
         
         
     def recibirFlujoOggUDP(self):
