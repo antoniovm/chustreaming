@@ -24,7 +24,7 @@ class NodoFuente:
         self.socketClientesUDP.bind( ('', 0))#Puero 0 = el sistema operativo elige uno libre
         
         self.socketServerTCP.bind(('', 12000))
-        self.socketServerTCP.listen(1)
+        self.socketServerTCP.listen(256)
         
     def conectarIcecast(self):
         self.socketIcecast.connect(('localhost', 8000))
@@ -78,16 +78,16 @@ class NodoFuente:
         socketPeer.send(tamBinario)
         print "Enviando direcciones de peers conectados"
         for i in self.direcPeers:
-            binario = self.convertirBinarioIPPuerto(self.direcPeers[0], self.direcPeers[1]) #Convertimos la direccion en una cadena binaria para ue sea de longitud fija
+            binario = self.convertirBinarioIPPuerto(i) #Convertimos la direccion en una cadena binaria para ue sea de longitud fija
             print len(binario)
-            socketPeer.send(self.direcPeers[i])
+            socketPeer.send(binario)
             
-    def convertirBinarioIPPuerto(self,ip,puerto):
+    def convertirBinarioIPPuerto(self,(ip,puerto)):
         sep = ip.split(".")
         i = 0 
         binario = ''
         for i in sep:
-            binario += pack(">H",int(sep[i]))
+            binario += pack(">H",int(i))
         
         binario += pack(">I",puerto)
         
@@ -155,15 +155,16 @@ class NodoFuente:
             msg = binario + msg
             
             
-            self.socketClientesUDP.sendto(msg, (self.direcPeers[self.indiceDirec]))
-            print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
-            self.indiceDirec = (self.indiceDirec + 1) % len(self.direcPeers)
+            if len(self.direcPeers) > 0:
+                self.socketClientesUDP.sendto(msg, (self.direcPeers[self.indiceDirec]))
+                print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
+                self.indiceDirec = (self.indiceDirec + 1) % len(self.direcPeers)
             
 
 nodoFuente = NodoFuente()
 nodoFuente.conectarIcecast()
 nodoFuente.recibirCabecera()
-nodoFuente.gestionarNuevoPeerConectado()    #Para esperar al primer peer
+#nodoFuente.gestionarNuevoPeerConectado()    #Para esperar al primer peer
 thread.start_new_thread(nodoFuente.esperarNuevasConexiones,())      #Esperar al resto de peers
 nodoFuente.hiloLeerIcecast()
 
