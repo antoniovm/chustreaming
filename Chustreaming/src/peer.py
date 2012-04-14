@@ -50,7 +50,7 @@ class Peer:
         i = 0
         cabecera = ''
         while i < 10:
-            msg = self.leerSocket(self.socketSourceTCP, self.MSGLEN-2)
+            (msg,dir) = self.leerSocket(self.socketSourceTCP, self.MSGLEN-2)
             cabecera = cabecera + msg
             i += 1
             print "Recibido paquete de cabecera ", i
@@ -59,12 +59,38 @@ class Peer:
     def bufferIn(self):
         i = 0
         while i<256:
-            print self.socketUDP.getsockname()
-            msg = self.leerSocket(self.socketUDP, self.MSGLEN) #Recibimos
+            (msg,dir) = self.leerSocket(self.socketUDP, self.MSGLEN) #Recibimos
+            
+            print "Bloque ", self.separarID(msg)[0],"de",dir," encolado"
+            
+            
+            self.comprobarPaqueteDir(msg,dir)
+            
+            
             print "Bloque ", self.separarID(msg)[0]," encolado"
             (id,msg)=self.separarID(msg)    #Separamos el numero de bloque del mensaje
             self.buffer.push(id, msg)   #"Encolamos"
             i+=1
+    
+    def comprobarPaqueteDir(self,paquete ,dir):
+            if dir == self.socketSourceTCP.getpeername():
+                self.reenviarPaqueteRestoPeers(paquete)
+                dir = None
+                
+            if (dir != None) and (not self.buscarDirecPeer(dir)):
+                self.direcPeers.append(dir)
+                
+    def buscarDirecPeer(self, dir):
+        for i in self.direcPeers:
+            if dir == i:
+                return True
+        return False
+        
+    
+    def reenviarPaqueteRestoPeers(self, paquete):
+        for i in self.direcPeers:
+            self.socketUDP.sendto(paquete,i)
+        
             
     def separarID(self, msg):
         return (unpack(">H", msg[:2])[0], msg[2:])
@@ -73,27 +99,27 @@ class Peer:
     def leerSocket(self,socket,tam):
         msg = ''
         while len(msg) < tam:
-            chunk = socket.recv(tam-len(msg)) 
+            (chunk,dir) = socket.recvfrom(tam-len(msg)) 
             if chunk == '':
                 #print RuntimeError("socket connection broken flujo Ogg")
                 continue
             
             msg = msg + chunk
-        return msg
+        return (msg,dir)
     
     def recibirPeersConectados(self):
         recv = self.socketSourceTCP.recv(2)
         numConect = unpack(">H", recv)[0]
         i = 0
-        j = 0
+        
         
         ip = ""
         puerto = 0
         print "Peer conectado: ", numConect
         
         while i < numConect:
-            recv = self.leerSocket(self.socketSourceTCP, 12)
-            
+            (recv,dir) = self.leerSocket(self.socketSourceTCP, 12)
+            j = 0
             while j < 4:
                 ip += str(unpack(">H", recv[j*2:(j+1)*2])[0])+"."
                 j += 1
@@ -135,9 +161,11 @@ class Peer:
         
         print "Cabecera Ogg escrita"
         while True:
-            msg = self.leerSocket(self.socketUDP, self.MSGLEN)
+            (msg,dir) = self.leerSocket(self.socketUDP, self.MSGLEN)
                         
             (numeroBloque, msg2) = self.separarID(msg);
+            
+            self.comprobarPaqueteDir(msg,dir)
             
             self.buffer.push(numeroBloque, msg2)
             
