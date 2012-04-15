@@ -55,7 +55,7 @@ class NodoFuente:
             print "Paquete ", i, " enviado."
             i += 1
         print "Cabecera enviada."        
-        self.enviarClienteUDP(self.direcPeers[len(self.direcPeers)-1])
+        self.enviarClienteUDP(self.direcPeers[len(self.direcPeers)-1]) #ESTO YA NO VALE, NO???
     
     
     def gestionarNuevoPeerConectado(self):
@@ -97,7 +97,8 @@ class NodoFuente:
         
         return binario
         
-    def enviarClienteUDP(self, socketPeer):
+    #ESTO YA NO VALE, NO???
+    def enviarClienteUDP(self, socketPeer): 
         #self.socketClientesUDP = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         socketPeer = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         #self.socketClientesUDP.sendto(msg, self.direccionCliente)
@@ -162,7 +163,7 @@ class NodoFuente:
             if len(self.direcPeers) > 0:
                 self.socketClientesUDP.sendto(msg, (self.direcPeers[self.indiceDirec]))
                 print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
-                self.indiceDirec = (self.indiceDirec + 1) % len(self.direcPeers)
+                self.indiceDirec = (self.indiceDirec + 1) % len(self.direcPeers) #A cada vuelta, mandamos a un peer distinto
             
 
 nodoFuente = NodoFuente()
