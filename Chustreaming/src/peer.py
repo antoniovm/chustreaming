@@ -72,15 +72,15 @@ class Peer:
             self.buffer.push(id, msg)   #"Encolamos"
             i+=1
     
-    def comprobarPaqueteDir(self,paquete ,dir):
-            if dir == self.socketSourceTCP.getpeername():
+    def comprobarPaqueteDir(self,paquete ,dir): #Comprueba si el paquete llega del source o de otro peer
+            if dir == self.socketSourceTCP.getpeername(): #Si el paquete llega del source se reenvia
                 self.reenviarPaqueteRestoPeers(paquete)
                 dir = None
                 
-            if (dir != None) and (not self.buscarDirecPeer(dir)):
+            if (dir != None) and (not self.buscarDirecPeer(dir)): #Si llega un paquete de un peer que no tenemos en la lista, append peer
                 self.direcPeers.append(dir)
                 
-    def buscarDirecPeer(self, dir):
+    def buscarDirecPeer(self, dir): #Busca un peer 
         for i in self.direcPeers:
             if dir == i:
                 return True
