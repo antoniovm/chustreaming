@@ -29,6 +29,17 @@ class HashBuffer:
         self.num -= 1
         return (self.cola,msg)
     
+    def pop2(self):
+        while self.buffer[self.cola%self.tam] == None:
+            self.cola = (self.cola+1)%self.tam
+        msg = self.buffer[self.cola%self.tam]
+        self.buffer[self.cola%self.tam] = None
+        self.cola = (self.cola+1)%self.tam
+        if msg == None:
+            return (self.cola,"")
+        self.num -= 1
+        return (self.cola,msg)
+    
     def buffering(self, booleano):
         self.buffer = booleano
     
