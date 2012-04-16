@@ -4,7 +4,8 @@ Created on 15/03/2012
 @author: jorge, antonio, miguel
 '''
 import socket
-import getpass          
+import getpass
+import sys          
 import os               #Para obtener datos del sistema operativo
 from struct import unpack #Para desempaquetar cadenas de bytes
 from logging import thread
@@ -63,11 +64,8 @@ class Peer:
             
             print "Bloque ", self.separarID(msg)[0],"de",dir," encolado"
             
-            
             self.comprobarPaqueteDir(msg,dir)
             
-            
-            print "Bloque ", self.separarID(msg)[0]," encolado"
             (id,msg)=self.separarID(msg)    #Separamos el numero de bloque del mensaje
             self.buffer.push(id, msg)   #"Encolamos"
             i+=1
@@ -101,8 +99,8 @@ class Peer:
         while len(msg) < tam:
             (chunk,dir) = socket.recvfrom(tam-len(msg)) 
             if chunk == '':
-                #print RuntimeError("socket connection broken flujo Ogg")
-                continue
+                print RuntimeError("socket connection broken flujo Ogg")
+                
             
             msg = msg + chunk
         return (msg,dir)
@@ -149,6 +147,8 @@ class Peer:
         print "Encolando..."
         self.bufferIn()
         
+        #sys.exit()
+        
         while i < 10:
             self.socketClientePlayer.send(cabe[1024*i:1024*(i+1)])
             i += 1
@@ -170,12 +170,17 @@ class Peer:
             self.buffer.push(numeroBloque, msg2)
             
             f.write(msg2)
-            pop = self.buffer.pop()
+            (id, pop) = self.buffer.pop()
+            
+            
+            
             if pop == "":
+                print "Bloque nulo."
                 continue
+            
             self.socketClientePlayer.send(pop)
             i = i +1
-            print i, " Iteracion - ", numeroBloque, " bloque obtenido";
+            print i, " Iteracion - ", id, " bloque leido";
             
             
     def escribirPorTeclado(self):

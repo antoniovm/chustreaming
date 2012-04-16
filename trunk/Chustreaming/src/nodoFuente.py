@@ -54,9 +54,7 @@ class NodoFuente:
             socketTCP.send(self.getPaquete(i))
             print "Paquete ", i, " enviado."
             i += 1
-        print "Cabecera enviada."        
-        self.enviarClienteUDP(self.direcPeers[len(self.direcPeers)-1]) #ESTO YA NO VALE, NO???
-    
+        print "Cabecera enviada."            
     
     def gestionarNuevoPeerConectado(self):
         nuevoSocketDir = self.aceptarConexionTCP()      #Aceptar nueva conexion
@@ -95,24 +93,7 @@ class NodoFuente:
         
         binario += pack(">I",puerto)
         
-        return binario
-        
-    #ESTO YA NO VALE, NO???
-    def enviarClienteUDP(self, socketPeer): 
-        #self.socketClientesUDP = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        socketPeer = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        #self.socketClientesUDP.sendto(msg, self.direccionCliente)
-        
-        
-    def eliminarCabeceraHTTP(self, chunk):
-        #Eliminar la cabecera HTTP
-        #posicionNumeroMagico = chunk.find("OggS") #Posicion en la que se encuentra OggS 
-        #if posicionNumeroMagico < 0:
-        #    chunk = ''
-        #    return chunk
-        #else:
-        #    chunk = chunk[posicionNumeroMagico:]    #Forma de indexar subcadenas
-            return chunk          
+        return binario        
                         
     def recibirCabecera(self):
         #f = open("C:\\Users\\" + "Loop" + "\\Desktop\\" + "serverBunny" + ".ogg", "w")
@@ -127,12 +108,6 @@ class NodoFuente:
                     raise RuntimeError("socket connection broken icecast")
                 msg = msg + chunk
                 
-            #numeroBloque=(numeroBloque+1)%(2**16)
-            #binario = pack(">H", numeroBloque) #Codificado como short big-endian
-            #msg = binario + msg
-            #self.socketClientesUDP.sendto( msg, (self.direccionCliente[0], 12000))
-            #self.socketClienteTCP.send(msg)
-            #f.write(msg);
             self.cabecera += msg
             i += 1
             print "Recibido bloque ", i
