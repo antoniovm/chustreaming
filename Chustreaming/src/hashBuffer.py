@@ -14,8 +14,10 @@ class HashBuffer:
         
     def push(self, id, msg):
         if self.cola == -1:
-            self.cola = id 
+            self.cola = id%self.tam 
         self.buffer[id%self.tam] = msg
+        if msg == "":
+            print id
         self.num = min((self.num+1,self.tam)) 
         
     def pop(self):
@@ -23,9 +25,9 @@ class HashBuffer:
         self.buffer[self.cola%self.tam] = None
         self.cola = (self.cola+1)%self.tam
         if msg == None:
-            return ""
+            return (self.cola,"")
         self.num -= 1
-        return msg
+        return (self.cola,msg)
     
     def buffering(self, booleano):
         self.buffer = booleano
