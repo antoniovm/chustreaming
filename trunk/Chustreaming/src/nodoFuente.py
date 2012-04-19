@@ -7,7 +7,8 @@ Created on 06/03/2012
 import socket
 import thread
 from struct import pack
-
+from struct import unpack
+from hashBuffer import HashBuffer
 
 
 class NodoFuente:
@@ -29,6 +30,7 @@ class NodoFuente:
         self.socketServerTCP.bind(('', self.PUERTO_POR_DEFECTO ))
         self.socketServerTCP.listen(256)
         
+        self.buffer = HashBuffer(512)
     def conectarIcecast(self):
         self.socketIcecast.connect(('localhost', 8000))
         self.socketIcecast.send("GET /canal1 HTTP/1.1\r\n\r\n")
@@ -114,6 +116,20 @@ class NodoFuente:
         #f.close()
         
 
+    def reenvioPaquetePerdido(self):
+        (num,dir) = self.socketClientesUDP.recvfrom(2)
+        num = unpack(">H",num)
+        
+        (id,msg) = self.buffer.index(num)
+        
+        
+        pkg = pack(">H",id) + msg
+        self.socketClientesUDP.sendto(pkg,dir)
+        
+        
+        
+        
+        
         
     def hiloLeerIcecast(self):
         numeroBloque = 0;
@@ -129,13 +145,16 @@ class NodoFuente:
                     
                 msg = msg + chunk
                 
-                
+            
             numeroBloque=(numeroBloque+1)%(2**16)
+            
+            self.buffer.push(numeroBloque, msg)
+            
             binario = pack(">H", numeroBloque) #Codificado como short big-endian
             msg = binario + msg
             
             
-            if len(self.direcPeers) > 0:
+            if len(self.direcPeers) > 0 and numeroBloque%5 != 0:
                 self.socketClientesUDP.sendto(msg, (self.direcPeers[self.indiceDirec]))
                 print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
                 self.indiceDirec = (self.indiceDirec + 1) % len(self.direcPeers) #A cada vuelta, mandamos a un peer distinto
@@ -146,6 +165,7 @@ nodoFuente.conectarIcecast()
 nodoFuente.recibirCabecera()
 #nodoFuente.gestionarNuevoPeerConectado()    #Para esperar al primer peer
 thread.start_new_thread(nodoFuente.esperarNuevasConexiones,())      #Esperar al resto de peers
+thread.start_new_thread(nodoFuente.reenvioPaquetePerdido,())
 nodoFuente.hiloLeerIcecast()
 
         
