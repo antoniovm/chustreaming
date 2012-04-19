@@ -8,6 +8,7 @@ import getpass
 import sys          
 import os               #Para obtener datos del sistema operativo
 from struct import unpack #Para desempaquetar cadenas de bytes
+from struct import pack
 from logging import thread
 from hashBuffer import HashBuffer
 
@@ -59,7 +60,7 @@ class Peer:
     
     def bufferIn(self):
         i = 0
-        while i<256:
+        while i<self.buffer.tam/2:
             (msg,dir) = self.leerSocket(self.socketUDP, self.MSGLEN) #Recibimos
             
             print "Bloque ", self.separarID(msg)[0],"de",dir," encolado"
@@ -169,6 +170,8 @@ class Peer:
             
             self.buffer.push(numeroBloque, msg2)
             
+            self.comprobarPaquetePerdido()
+            
             f.write(msg2)
             (id, pop) = self.buffer.pop()
             
@@ -183,6 +186,16 @@ class Peer:
             print i, " Iteracion - ", id, " bloque leido";
             
             
+    def comprobarPaquetePerdido(self):
+        if(self.buffer.peekMiddle()[1] is None):
+            num = pack(">H",self.buffer.peekMiddle()[0])
+            self.socketUDP.sendto(num,self.socketSourceTCP.getpeername())
+            
+    
+    #def recuperarPaquetePerdido(self):
+        #while True:
+            #self.socketUDP.recvfrom()
+    
     def escribirPorTeclado(self):
         #return raw_input("Introduzca algo por teclado: ")
         return "bunny" #para no escribir todo el rato haciendo pruebas
