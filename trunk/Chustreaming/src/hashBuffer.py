@@ -22,12 +22,11 @@ class HashBuffer:
         
     def pop(self):
         if self.buffer[self.cola%self.tam] is None:
+            self.cola = (self.cola+1)%self.tam
             return (-1,"")
         (id,msg) = self.buffer[self.cola%self.tam]
         self.buffer[self.cola%self.tam] = None
         self.cola = (self.cola+1)%self.tam
-        if msg == None:
-            return (-1,"")
         self.num -= 1
         return (id,msg)
     
