@@ -117,14 +117,15 @@ class NodoFuente:
         
 
     def reenvioPaquetePerdido(self):
-        (num,dir) = self.socketClientesUDP.recvfrom(2)
-        num = unpack(">H",num)
-        
-        (id,msg) = self.buffer.index(num)
-        
-        
-        pkg = pack(">H",id) + msg
-        self.socketClientesUDP.sendto(pkg,dir)
+        while True:
+            (num,dir) = self.socketClientesUDP.recvfrom(2)
+            num = unpack(">H",num)
+            
+            (id,msg) = self.buffer.index(num)
+            
+            
+            pkg = pack(">H",id) + msg
+            self.socketClientesUDP.sendto(pkg,dir)
         
         
         

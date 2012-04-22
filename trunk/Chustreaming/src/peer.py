@@ -19,6 +19,8 @@ class Peer:
         self.direcPeers = []
         
         self.socketUDP = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
+        self.socketPerdidosUDP = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
+        self.socketPlayerTCP.bind(('', 0)) 
         #self.socketUDP.bind(('', 0))#Puero 0 = el sistema operativo elige uno libre
         #self.puerto = self.socketUDP.getsockname()[1]
         print "SocketUDP enlazado"
@@ -133,7 +135,11 @@ class Peer:
             i += 1
             
             
-        
+    def recibirPaquetesPerdidos(self):
+        while True:
+            leido = self.leerSocket(self.socketPerdidosUDP, self.MSGLEN) 
+            (id,msg) = self.separarID(leido)
+            self.buffer.push(id, msg)   
         
     def recibirFlujoOggUDP(self):
         ruta = self.getEscritorio(self.escribirPorTeclado())
@@ -217,4 +223,5 @@ peer = Peer()
 #peer = Peer('87.216.135.207', 12000)
 peer.aceptarConexionPlayerTCP()
 peer.conectarSourceTCP('localhost', 12000)
+thread.start_new_thread(peer.recibirPaquetesPerdidos(), ())
 peer.recibirFlujoOggUDP()
