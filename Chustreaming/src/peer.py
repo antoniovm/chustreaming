@@ -197,7 +197,7 @@ class Peer:
         if(self.buffer.peekMiddle()[1] is None):
             #print "Bloque perdido",self.buffer.peekMiddle()[0],"pedido."
             num = pack(">H",self.buffer.peekMiddle()[0]%self.buffer.tam)
-            self.socketUDP.sendto(num,self.socketSourceTCP.getpeername())
+            self.socketPerdidosUDP.sendto(num,self.socketSourceTCP.getpeername())
             
     
     #def recuperarPaquetePerdido(self):
