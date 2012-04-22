@@ -135,9 +135,11 @@ class Peer:
             
             
     def recibirPaquetesPerdidos(self):
+        print "Socket perdidos:",self.socketPerdidosUDP.getsockname()
         while True:
             leido = self.leerSocket(self.socketPerdidosUDP, self.MSGLEN) 
             (id,msg) = self.separarID(leido)
+            print "Bloque perdido",id, "recibido"
             self.buffer.push(id, msg)   
         
     def recibirFlujoOggUDP(self):
@@ -183,17 +185,18 @@ class Peer:
             
             
             if pop == "":
-                print "Bloque nulo."
+                #print "Bloque nulo."
                 continue
             
             self.socketClientePlayer.send(pop)
             i = i +1
-            print i, " Iteracion - ", id, " bloque leido";
+            #print i, " Iteracion - ", id, " bloque leido";
             
             
     def comprobarPaquetePerdido(self):
         if(self.buffer.peekMiddle()[1] is None):
-            num = pack(">H",self.buffer.peekMiddle()[0])
+            #print "Bloque perdido",self.buffer.peekMiddle()[0],"pedido."
+            num = pack(">H",self.buffer.peekMiddle()[0]%self.buffer.tam)
             self.socketUDP.sendto(num,self.socketSourceTCP.getpeername())
             
     

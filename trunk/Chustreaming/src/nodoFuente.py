@@ -119,8 +119,8 @@ class NodoFuente:
     def reenvioPaquetePerdido(self):
         while True:
             (num,dir) = self.socketClientesUDP.recvfrom(2)
-            num = unpack(">H",num)
-            
+            num = unpack(">H",num)[0]
+            print "Peticion del paquete",num, "de", dir
             (id,msg) = self.buffer.index(num)
             
             
@@ -157,7 +157,7 @@ class NodoFuente:
             
             if len(self.direcPeers) > 0 and numeroBloque%5 != 0:
                 self.socketClientesUDP.sendto(msg, (self.direcPeers[self.indiceDirec]))
-                print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
+                #print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
                 self.indiceDirec = (self.indiceDirec + 1) % len(self.direcPeers) #A cada vuelta, mandamos a un peer distinto
             
 
