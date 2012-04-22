@@ -9,7 +9,7 @@ import sys
 import os               #Para obtener datos del sistema operativo
 from struct import unpack #Para desempaquetar cadenas de bytes
 from struct import pack
-from logging import thread
+import thread
 from hashBuffer import HashBuffer
 
 class Peer:
@@ -20,7 +20,6 @@ class Peer:
         
         self.socketUDP = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
         self.socketPerdidosUDP = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
-        self.socketPlayerTCP.bind(('', 0)) 
         #self.socketUDP.bind(('', 0))#Puero 0 = el sistema operativo elige uno libre
         #self.puerto = self.socketUDP.getsockname()[1]
         print "SocketUDP enlazado"
@@ -223,5 +222,5 @@ peer = Peer()
 #peer = Peer('87.216.135.207', 12000)
 peer.aceptarConexionPlayerTCP()
 peer.conectarSourceTCP('localhost', 12000)
-thread.start_new_thread(peer.recibirPaquetesPerdidos(), ())
+thread.start_new_thread(peer.recibirPaquetesPerdidos, ())
 peer.recibirFlujoOggUDP()
