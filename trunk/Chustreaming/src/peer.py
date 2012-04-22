@@ -137,7 +137,7 @@ class Peer:
     def recibirPaquetesPerdidos(self):
         print "Socket perdidos:",self.socketPerdidosUDP.getsockname()
         while True:
-            leido = self.leerSocket(self.socketPerdidosUDP, self.MSGLEN) 
+            (leido,dir) = self.leerSocket(self.socketPerdidosUDP, self.MSGLEN) 
             (id,msg) = self.separarID(leido)
             print "Bloque perdido",id, "recibido"
             self.buffer.push(id, msg)   
