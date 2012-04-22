@@ -157,7 +157,7 @@ class NodoFuente:
             
             if len(self.direcPeers) > 0 and numeroBloque%5 != 0:
                 self.socketClientesUDP.sendto(msg, (self.direcPeers[self.indiceDirec]))
-                #print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
+                print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
                 self.indiceDirec = (self.indiceDirec + 1) % len(self.direcPeers) #A cada vuelta, mandamos a un peer distinto
             
 
