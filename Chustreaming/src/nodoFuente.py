@@ -118,17 +118,19 @@ class NodoFuente:
 
     def reenvioPaquetePerdido(self):
         while True:
-            (num,dir) = self.socketClientesUDP.recvfrom(2)#Recibimos el numero de posicion perdido
+            (num,dirSolic) = self.socketClientesUDP.recvfrom(2)#Recibimos el numero de posicion perdido
             num = unpack(">H",num)[0]
-            print "Peticion del paquete",num, "de", dir
-            (dirPeer,(numB,msg),contador) = self.buffer.index(num) #Leemos el conjunto de datos asociado al peer al que fue enviado el bloque pedido
+            print "Peticion del paquete",num, "de", dirSolic
+            (dirRemitente,(numB,msg),contador) = self.buffer.index(num) #Leemos el conjunto de datos asociado al peer al que fue enviado el bloque pedido
             
-            tupla = self.comprobarQuejas((dirPeer,(numB,msg),contador))#Comprobamos el numero de quejas del rest de peers
+            if dirSolic != dirRemitente:
+                tupla = self.comprobarQuejas((dirRemitente,(numB,msg),contador))#Comprobamos el numero de quejas del rest de peers
+                self.buffer.push(num, tupla)#Reinsertamos la tupla con los valores comprobados
             
-            self.buffer.push(num, tupla)#Reinsertamos la tupla con los valores comprobados
+            
             
             pkg = pack(">H",numB) + msg
-            self.socketClientesUDP.sendto(pkg,dir)#Reenviamos el paquete pedido
+            self.socketClientesUDP.sendto(pkg,dirSolic)#Reenviamos el paquete pedido
         
         
         

@@ -15,14 +15,15 @@ class HashBuffer:
     def push(self, id, tupla):
         if self.cola == -1:
             self.cola = id%self.tam 
-        self.buffer[id%self.tam] = (id,tupla)
+        self.buffer[id%self.tam] = tupla
         self.num = min((self.num+1,self.tam))
         
     def pop(self):
         tupla = self.buffer[self.cola%self.tam]
         self.buffer[self.cola%self.tam] = None
         self.cola = (self.cola+1)%self.tam
-        self.num -= 1
+        if tupla is not None:
+            self.num -= 1
         return tupla
     
     def peekMiddle(self):
