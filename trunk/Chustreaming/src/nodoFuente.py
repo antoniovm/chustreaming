@@ -118,20 +118,36 @@ class NodoFuente:
 
     def reenvioPaquetePerdido(self):
         while True:
-            (num,dir) = self.socketClientesUDP.recvfrom(2)
+            (num,dir) = self.socketClientesUDP.recvfrom(2)#Recibimos el numero de posicion perdido
             num = unpack(">H",num)[0]
             print "Peticion del paquete",num, "de", dir
-            (id,msg) = self.buffer.index(num)
+            (dirPeer,(numB,msg),contador) = self.buffer.index(num) #Leemos el conjunto de datos asociado al peer al que fue enviado el bloque pedido
             
+            tupla = self.comprobarQuejas((dirPeer,(numB,msg),contador))#Comprobamos el numero de quejas del rest de peers
             
-            pkg = pack(">H",id) + msg
-            self.socketClientesUDP.sendto(pkg,dir)
+            self.buffer.push(num, tupla)#Reinsertamos la tupla con los valores comprobados
+            
+            pkg = pack(">H",numB) + msg
+            self.socketClientesUDP.sendto(pkg,dir)#Reenviamos el paquete pedido
         
         
         
         
         
+    def comprobarQuejas(self,tupla):
+        (dir,pkg,contador) = tupla
+        if(contador > -1): #El peer ya ha sido eliminado de la lista     
+            return tupla
+        contador += 1
+        if(contador >= len(self.direcPeers)/2): #Si mas de la mitad de los peers se han quejado, lo eliminamos de la lista
+            contador = -1
+            self.direcPeers.remove(dir)
+        tupla = (dir,pkg,contador)
+        return tupla
         
+        
+        
+    
     def hiloLeerIcecast(self):
         numeroBloque = 0;
         #f = open("C:\\Users\\" + "Loop" + "\\Desktop\\" + "serverBunny" + ".ogg", "a")
@@ -146,18 +162,19 @@ class NodoFuente:
                     
                 msg = msg + chunk
                 
-            
-            numeroBloque=(numeroBloque+1)%(2**16)
-            
-            self.buffer.push(numeroBloque, msg)
-            
-            binario = pack(">H", numeroBloque) #Codificado como short big-endian
-            msg = binario + msg
+        
             
             
             if len(self.direcPeers) > 0:
+                numeroBloque=(numeroBloque+1)%(2**16)
+            
+                tupla = (self.direcPeers[self.indiceDirec],(numeroBloque,msg),0) #-----------((ip,puerto),(numeroBloque,bloque),contadorQuejas) 
+                self.buffer.push(numeroBloque, tupla)
+                
+                binario = pack(">H", numeroBloque) #Codificado como short big-endian
+                msg = binario + msg
                 self.socketClientesUDP.sendto(msg, (self.direcPeers[self.indiceDirec]))
-                print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
+                #print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
                 self.indiceDirec = (self.indiceDirec + 1) % len(self.direcPeers) #A cada vuelta, mandamos a un peer distinto
             
 

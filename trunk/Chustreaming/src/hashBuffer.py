@@ -12,28 +12,23 @@ class HashBuffer:
         self.cola = -1
         self.buffering =False   
         
-    def push(self, id, msg):
+    def push(self, id, tupla):
         if self.cola == -1:
             self.cola = id%self.tam 
-        self.buffer[id%self.tam] = (id,msg)
-        if msg == "":
-            print id
-        self.num = min((self.num+1,self.tam)) 
+        self.buffer[id%self.tam] = (id,tupla)
+        self.num = min((self.num+1,self.tam))
         
     def pop(self):
-        if self.buffer[self.cola%self.tam] is None:
-            self.cola = (self.cola+1)%self.tam
-            return (-1,"")
-        (id,msg) = self.buffer[self.cola%self.tam]
+        tupla = self.buffer[self.cola%self.tam]
         self.buffer[self.cola%self.tam] = None
         self.cola = (self.cola+1)%self.tam
         self.num -= 1
-        return (id,msg)
+        return tupla
     
     def peekMiddle(self):
-        return ((self.tam/4+self.cola)%self.tam,self.buffer[(self.tam/4+self.cola)%self.tam])
-        
-        
+        indice = (self.tam/4+self.cola)%self.tam
+        return (indice,self.buffer[indice])
+              
     
     def pop2(self):
         while self.buffer[self.cola%self.tam] == None:
