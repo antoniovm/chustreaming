@@ -21,10 +21,10 @@ class HashBuffer:
         self.espacioLibre = Semaphore(self.tam*2) #self.tam
         self.exmut = Semaphore(1)
         
-    def push(self, id, msg):
+    def push(self, id, tupla):
         self.espacioLibre.acquire()
         self.exmut.acquire()
-        self.buffer[id%self.tam] = msg
+        self.buffer[id%self.tam] = tupla
         self.num += 1
         print "Push ", id
         self.exmut.release()

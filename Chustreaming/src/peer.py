@@ -4,8 +4,7 @@ Created on 15/03/2012
 @author: jorge, antonio, miguel
 '''
 import socket
-import getpass
-import sys          
+import getpass        
 import os               #Para obtener datos del sistema operativo
 from struct import unpack #Para desempaquetar cadenas de bytes
 from struct import pack
@@ -180,17 +179,23 @@ class Peer:
             self.comprobarPaquetePerdido()
             
             f.write(msg2)
-            (id, pop) = self.buffer.pop()
+            leido = self.buffer.pop()
             
             
-            
-            if pop == "":
+            if leido is None:
                 print "Bloque nulo."
                 continue
             
+            
+            
+            (id, pop) = leido
+            
+            
+            
+            
             self.socketClientePlayer.send(pop)
             i = i +1
-            print i, " Iteracion - ", id, " bloque leido";
+            #print i, " Iteracion - ", id, " bloque leido";
             
             
     def comprobarPaquetePerdido(self):
