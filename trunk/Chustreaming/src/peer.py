@@ -10,13 +10,14 @@ from struct import unpack #Para desempaquetar cadenas de bytes
 from struct import pack
 import thread
 from hashBuffer import HashBuffer
+import IN
 
 
 class Peer:
     def __init__(self):
         self.MSGLEN = 1026
         
-        self.direcPeers = []
+        self.listaPeers = []
         
         self.socketUDP = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
         self.socketPerdidosUDP = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
@@ -77,19 +78,21 @@ class Peer:
                 self.reenviarPaqueteRestoPeers(paquete)
                 dir = None
                 
-            if (dir != None) and (not self.buscarDirecPeer(dir)): #Si llega un paquete de un peer que no tenemos en la lista, append peer
-                self.direcPeers.append(dir)
+            if (dir != None) and (self.buscarDirecPeer(dir) < 0): #Si llega un paquete de un peer que no tenemos en la lista, append peer
+                self.listaPeers.append((dir,0))
                 
     def buscarDirecPeer(self, dir): #Busca un peer 
-        for i in self.direcPeers:
-            if dir == i:
-                return True
-        return False
+        j = 0
+        for i in self.listaPeers:
+            if dir == i[0]:
+                return j
+            j += 1
+        return -1
         
     
     def reenviarPaqueteRestoPeers(self, paquete):
-        for i in self.direcPeers:
-            self.socketUDP.sendto(paquete,i)
+        for i in self.listaPeers:
+            self.socketUDP.sendto(paquete,i[0])
         
             
     def separarID(self, msg):
@@ -119,7 +122,7 @@ class Peer:
             
             dir = self.desempaquetarDireccion(bin)
             
-            self.direcPeers.append(dir)
+            self.listaPeers.append((dir,0))
             
             i += 1
             
@@ -188,6 +191,8 @@ class Peer:
             
             self.comprobarPaqueteDir(msg,dir)
             
+            self.comprobarGradoDeSolidaridad(dir)
+            
             self.buffer.push(numeroBloque, (numeroBloque,msg2))
             
             self.comprobarPaquetePerdido()
@@ -213,7 +218,35 @@ class Peer:
             i = i +1
             #print i, " Iteracion - ", id, " bloque leido";
             
+    
+    def comprobarGradoDeSolidaridad(self,dir):
+        indicePeer = self.buscarDirecPeer(dir)      #Buscamos el peer con esa direccion
+        if indicePeer < 0:
+            return 
+        
+        (dir,gradoSolidaridad) = self.listaPeers[indicePeer]    #Extraemos su direccion y grado de solidaridad
+        print "Grado de solidaridad de",dir,":",gradoSolidaridad
+        self.listaPeers[indicePeer] = (dir,gradoSolidaridad+1)  #Incrementar grado de solidaridad
+        
+        if(gradoSolidaridad > 255):
+            self.dividirGradosDeSolidaridad()                   #En caso de llegar a 256 se dividen toos los grados de solidaridad entre 2
+    
+    def dividirGradosDeSolidaridad(self):
+        indicesAEliminar = []                                   #lista de indices de peers que se van a eliminar
+        j = 0
+        for (dir,gradoSolidaridad) in self.listaPeers:          #Recorrer la lista de peers dividiendo
+            self.listaPeers[j]=(dir,gradoSolidaridad/2)
+            if gradoSolidaridad/2 == 0:                         #En caso de ser cero, se incluye en la lista de peers que se van a eliminar
+                indicesAEliminar.append(j)
+            j +=1
+        
+        self.eliminarInsolidarios(indicesAEliminar)                             #Una vez recorrido, se eliminan los insolidarios, es decir los de grado igual a cero
             
+            
+    def eliminarInsolidarios(self,listaIndices):
+        for i in listaIndices:
+            del self.listaPeers[i]
+                
     def comprobarPaquetePerdido(self):
         if(self.buffer.peekMiddle()[1] is None):
             
