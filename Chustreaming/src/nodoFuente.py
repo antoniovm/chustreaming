@@ -21,12 +21,12 @@ class NodoFuente:
         self.indiceDirec = 0
         
         self.cabecera = ""
-        self.socketIcecast = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socketIcecast.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)#Para evitar la excepcion de puerto en uso 
+        self.socketIcecast = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
         
         self.socketServerTCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #socket TCP cabecera Ogg
         self.socketClientesUDP = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
         self.socketClientesUDP.bind(('', self.PUERTO_POR_DEFECTO ))
+        self.socketServerTCP.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)#Para evitar la excepcion de puerto en uso
         
         self.socketServerTCP.bind(('', self.PUERTO_POR_DEFECTO ))
         self.socketServerTCP.listen(256)
@@ -129,12 +129,17 @@ class NodoFuente:
 
     def reenvioPaquetePerdido(self):
         while True:
-            (pkg,dirSolic) = self.socketClientesUDP.recvfrom(8)#Recibimos el numero de posicion perdido
+            (pkg,dirSolic) = self.socketClientesUDP.recvfrom(4)#Recibimos el numero de posicion perdido
             num = unpack(">H",pkg[:2])[0]
+            puertoPrincipalSol = unpack(">H",pkg[2:])[0] #Recibimos el puerto principal para comprobar si es un bloque suyo, la ip es la misma que la de la peticion
+                    
+            dirPrincipalSolic = (dirSolic[0],puertoPrincipalSol)
             
-            dirPrincipalSolic = self.desempaquetarDireccion(pkg[2:])        #Recibimos la direccion principal para comprobar si es un bloque suyo
+             
+            if dirPrincipalSolic not in self.listaPeers:                    #Evitar que peers rechazados continuen haciendo peticiones
+                continue
             
-            #print "Peticion del paquete",num, "de", dirSolic
+            print "Peticion del paquete",num, "de", dirSolic
             (dirRemitente,(numB,msg),contador) = self.buffer.index(num) #Leemos el conjunto de datos asociado al peer al que fue enviado el bloque pedido
             
             if dirPrincipalSolic != dirRemitente:   #Si las direcciones son iguales, se ignora la queja
@@ -201,8 +206,12 @@ class NodoFuente:
                 except:
                     self.indiceDirec = -1   #Evitar semaforos en la eliminacion concurrente de peers
                 #print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
-                self.indiceDirec = (self.indiceDirec + 1) % len(self.listaPeers) #A cada vuelta, mandamos a un peer distinto
-            
+                print len(self.listaPeers), self.indiceDirec
+                try:
+                    self.indiceDirec = (self.indiceDirec + 1) % len(self.listaPeers) #A cada vuelta, mandamos a un peer distinto
+                except:
+                    self.indiceDirec = -1    
+                
 
 nodoFuente = NodoFuente()
 nodoFuente.conectarIcecast()

@@ -11,6 +11,8 @@ from struct import pack
 import thread
 from hashBuffer import HashBuffer
 import IN
+import subprocess
+
 
 
 class Peer:
@@ -155,7 +157,7 @@ class Peer:
         while True:
             (leido,dir) = self.leerSocket(self.socketPerdidosUDP, self.MSGLEN) 
             (id,msg) = self.separarID(leido)
-            #print "Bloque perdido",id,"(indice buffer:",id%self.buffer.tam,")", "recibido"
+            print "Bloque perdido",id,"(indice buffer:",id%self.buffer.tam,")", "recibido"
             self.buffer.push(id, (id,msg))   
         
     def recibirFlujoOggUDP(self):
@@ -201,8 +203,7 @@ class Peer:
             leido = self.buffer.pop()
             
             
-            if leido is None:
-                print "Bloque nulo."
+            if leido is None:       #Nos saltamos los bloques nulos
                 continue
             
             
@@ -221,7 +222,7 @@ class Peer:
     
     def comprobarGradoDeSolidaridad(self,dir):
         indicePeer = self.buscarDirecPeer(dir)      #Buscamos el peer con esa direccion
-        if indicePeer < 0:
+        if indicePeer < 0:                          #Si no se ha encontrado
             return 
         
         (dir,gradoSolidaridad) = self.listaPeers[indicePeer]    #Extraemos su direccion y grado de solidaridad
@@ -245,14 +246,15 @@ class Peer:
             
     def eliminarInsolidarios(self,listaIndices):
         for i in listaIndices:
+            print i[0],"eliminado."
             del self.listaPeers[i]
                 
     def comprobarPaquetePerdido(self):
         if(self.buffer.peekMiddle()[1] is None):
-            
             num = pack(">H",self.buffer.peekMiddle()[0]%self.buffer.tam)     #Numero de la posicion perdida
-            dir = self.empaquetarDireccion(self.socketUDP.getsockname())     #Paquete binario correspondiente a la direccion del socket principal
-            pkg = num + dir
+            print "Bloque",self.buffer.peekMiddle()[0]%self.buffer.tam,"perdido."
+            puerto = pack(">H", self.socketUDP.getsockname()[1])     #Paquete binario correspondiente al puerto del socket principal
+            pkg = num + puerto
             self.socketPerdidosUDP.sendto(pkg,self.socketSourceTCP.getpeername())
             
     
@@ -273,7 +275,8 @@ class Peer:
     
     def abrirVLC(self):
         if(os.name == 'nt'): #Windows
-            os.system('"C:\\Program Files (x86)\\VideoLAN\\vlc\\vlc" --verbose=-1 http://localhost:'+str(self.socketPlayerTCP.getsockname()[1]))
+            subprocess.call(['vlc',' --verbose=-1 http://localhost:'+str(self.socketPlayerTCP.getsockname()[1])])
+            #os.system('"C:\\Program Files (x86)\\VideoLAN\\vlc\\vlc" --verbose=-1 http://localhost:'+str(self.socketPlayerTCP.getsockname()[1]))
         else:
             os.system('vlc --verbose=-1 http://localhost:'+str(self.socketPlayerTCP.getsockname()[1]))
              
