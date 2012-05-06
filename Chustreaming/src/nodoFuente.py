@@ -17,7 +17,7 @@ class NodoFuente:
         
         self.PUERTO_POR_DEFECTO = 12000
         
-        self.direcPeers = []
+        self.listaPeers = []
         self.indiceDirec = 0
         
         self.cabecera = ""
@@ -64,7 +64,7 @@ class NodoFuente:
             
         self.enviarPeersActuales(nuevoSocketDir[0])     #Enviar la lista de peers conectados a traves del peurto TCP
         
-        self.direcPeers.append(nuevoSocketDir[1])       #Agregamos solo la direccion del peer (para usarla como direccion UDP)
+        self.listaPeers.append(nuevoSocketDir[1])       #Agregamos solo la direccion del peer (para usarla como direccion UDP)
         
         self.enviarCabeceraPeer(nuevoSocketDir[0])      #Usamos el puerto TCP para enviar la cabecera
                 
@@ -75,11 +75,11 @@ class NodoFuente:
            
         
     def enviarPeersActuales(self, socketPeer):      
-        tamBinario = pack(">H",len(self.direcPeers))    #Enviamos el numero de peers que hay conectados
-        print "Enviando numero de peers conectados (",len(self.direcPeers),")"
+        tamBinario = pack(">H",len(self.listaPeers))    #Enviamos el numero de peers que hay conectados
+        print "Enviando numero de peers conectados (",len(self.listaPeers),")"
         socketPeer.send(tamBinario)
         print "Enviando direcciones de peers conectados"
-        for i in self.direcPeers:
+        for i in self.listaPeers:
             print i
             binario = self.empaquetarDireccion(i) #Convertimos la direccion en una cadena binaria para ue sea de longitud fija
             print len(binario)
@@ -155,11 +155,11 @@ class NodoFuente:
         if(contador == -1): #El peer ya ha sido eliminado de la lista     
             return tupla
         contador += 1
-        if(contador >= len(self.direcPeers)/2): #Si mas de la mitad de los peers se han quejado, lo eliminamos de la lista
+        if(contador >= len(self.listaPeers)/2): #Si mas de la mitad de los peers se han quejado, lo eliminamos de la lista
             contador = -1
             try:
-                self.direcPeers.remove(dir)
-                print "Eliminado peer",dir,". Num peers:",len(self.direcPeers)
+                self.listaPeers.remove(dir)
+                print "Eliminado peer",dir,". Num peers:",len(self.listaPeers)
             except:
                 print "",#El peer ya ha sido eliminado
         tupla = (dir,pkg,contador)
@@ -185,11 +185,11 @@ class NodoFuente:
         
             
             
-            if len(self.direcPeers) > 0:
+            if len(self.listaPeers) > 0:
                 numeroBloque=(numeroBloque+1)%(2**16)
                 
                 try:
-                    tupla = (self.direcPeers[self.indiceDirec],(numeroBloque,msg),-1) #-----------((ip,puerto),(numeroBloque,bloque),contadorQuejas)
+                    tupla = (self.listaPeers[self.indiceDirec],(numeroBloque,msg),0) #-----------((ip,puerto),(numeroBloque,bloque),contadorQuejas)
                 except:
                     self.indiceDirec = -1   #Evitar semaforos en la eliminacion concurrente de peers
                 self.buffer.push(numeroBloque, tupla)
@@ -197,11 +197,11 @@ class NodoFuente:
                 binario = pack(">H", numeroBloque) #Codificado como short big-endian
                 msg = binario + msg
                 try:
-                    self.socketClientesUDP.sendto(msg, (self.direcPeers[self.indiceDirec]))
+                    self.socketClientesUDP.sendto(msg, (self.listaPeers[self.indiceDirec]))
                 except:
                     self.indiceDirec = -1   #Evitar semaforos en la eliminacion concurrente de peers
                 #print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
-                self.indiceDirec = (self.indiceDirec + 1) % len(self.direcPeers) #A cada vuelta, mandamos a un peer distinto
+                self.indiceDirec = (self.indiceDirec + 1) % len(self.listaPeers) #A cada vuelta, mandamos a un peer distinto
             
 
 nodoFuente = NodoFuente()
