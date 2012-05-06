@@ -11,6 +11,7 @@ from struct import pack
 import thread
 from hashBuffer import HashBuffer
 
+
 class Peer:
     def __init__(self):
         self.MSGLEN = 1026
@@ -68,7 +69,7 @@ class Peer:
             self.comprobarPaqueteDir(msg,dir)
             
             (id,msg)=self.separarID(msg)    #Separamos el numero de bloque del mensaje
-            self.buffer.push(id, msg)   #"Encolamos"
+            self.buffer.push(id, (id,msg))   #"Encolamos"
             i+=1
     
     def comprobarPaqueteDir(self,paquete ,dir): #Comprueba si el paquete llega del source o de otro peer
@@ -174,7 +175,7 @@ class Peer:
             
             self.comprobarPaqueteDir(msg,dir)
             
-            self.buffer.push(numeroBloque, msg2)
+            self.buffer.push(numeroBloque, (numeroBloque,msg2))
             
             self.comprobarPaquetePerdido()
             
@@ -187,8 +188,11 @@ class Peer:
                 continue
             
             
+            try:
+                (id, pop) = leido
+            except:
+                leido
             
-            (id, pop) = leido
             
             
             
