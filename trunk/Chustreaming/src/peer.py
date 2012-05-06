@@ -115,7 +115,7 @@ class Peer:
         print "Peers conectados: ", numConect
         
         while i < numConect:
-            (recv,bin) = self.leerSocket(self.socketSourceTCP, 6)
+            bin = self.socketSourceTCP.recv(6)
             
             dir = self.desempaquetarDireccion(bin)
             
@@ -130,7 +130,7 @@ class Peer:
         i = 0 
         binario = ''
         for i in sep:
-            binario += pack(">c",chr(int(i)))
+            binario += pack(">b",int(i))
         
         binario += pack(">H",puerto)
         
@@ -139,9 +139,8 @@ class Peer:
     def desempaquetarDireccion(self,bin):
         ip = ""
         j = 0
-        print len(bin)
         while j < 4:
-            ip += str(unpack(">c", bin[j:(j+1)])[0])+"."
+            ip += str(unpack(">b", bin[j:(j+1)])[0])+"."
             j += 1
         ip = ip[:-1]
             
@@ -155,12 +154,12 @@ class Peer:
         while True:
             (leido,dir) = self.leerSocket(self.socketPerdidosUDP, self.MSGLEN) 
             (id,msg) = self.separarID(leido)
-            print "Bloque perdido",id,"(indice buffer:",id%self.buffer.tam,")", "recibido"
+            #print "Bloque perdido",id,"(indice buffer:",id%self.buffer.tam,")", "recibido"
             self.buffer.push(id, (id,msg))   
         
     def recibirFlujoOggUDP(self):
-        ruta = self.getEscritorio(self.escribirPorTeclado())
-        f = open(ruta, "wb")
+        #ruta = self.getEscritorio(self.escribirPorTeclado())
+        #f = open(ruta, "wb")
         i = 0
         
         print "Recibiendo lista de direcciones de peers conectados..."
@@ -179,7 +178,7 @@ class Peer:
         
         i = 0
         
-        f.write(cabe)
+        #f.write(cabe)
         
         
         
@@ -195,7 +194,7 @@ class Peer:
             
             self.comprobarPaquetePerdido()
             
-            f.write(msg2)
+            #f.write(msg2)
             leido = self.buffer.pop()
             
             
