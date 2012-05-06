@@ -13,6 +13,8 @@ from hashBuffer import HashBuffer
 
 class NodoFuente:
     def __init__(self):
+        self.UMBRAL_QUEJAS = 1000
+        
         self.MSGLEN = 1024
         
         self.PUERTO_POR_DEFECTO = 12000
@@ -64,7 +66,7 @@ class NodoFuente:
             
         self.enviarPeersActuales(nuevoSocketDir[0])     #Enviar la lista de peers conectados a traves del peurto TCP
         
-        self.listaPeers.append(nuevoSocketDir[1])       #Agregamos solo la direccion del peer (para usarla como direccion UDP)
+        self.listaPeers.append((nuevoSocketDir[1],0))       #Agregamos la direccion del peer (para usarla como direccion UDP) y el numero de quejas
         
         self.enviarCabeceraPeer(nuevoSocketDir[0])      #Usamos el puerto TCP para enviar la cabecera
                 
@@ -80,8 +82,8 @@ class NodoFuente:
         socketPeer.send(tamBinario)
         print "Enviando direcciones de peers conectados"
         for i in self.listaPeers:
-            print i
-            binario = self.empaquetarDireccion(i) #Convertimos la direccion en una cadena binaria para ue sea de longitud fija
+            print i[0]
+            binario = self.empaquetarDireccion(i[0]) #Convertimos la direccion en una cadena binaria para que sea de longitud fija
             print len(binario)
             socketPeer.send(binario)
                   
@@ -136,10 +138,10 @@ class NodoFuente:
             dirPrincipalSolic = (dirSolic[0],puertoPrincipalSol)
             
              
-            if dirPrincipalSolic not in self.listaPeers:                    #Evitar que peers rechazados continuen haciendo peticiones
+            if self.buscarDirecPeer(dirPrincipalSolic) < 0:
                 continue
             
-            print "Peticion del paquete",num, "de", dirSolic
+            #print "Peticion del paquete",num, "de", dirSolic
             (dirRemitente,(numB,msg),contador) = self.buffer.index(num) #Leemos el conjunto de datos asociado al peer al que fue enviado el bloque pedido
             
             if dirPrincipalSolic != dirRemitente:   #Si las direcciones son iguales, se ignora la queja
@@ -159,11 +161,14 @@ class NodoFuente:
         (dir,pkg,contador) = tupla
         if(contador == -1): #El peer ya ha sido eliminado de la lista     
             return tupla
+        indice = self.buscarDirecPeer(dir)
+        (dir,quejas) = self.listaPeers[indice]
+        self.listaPeers[indice] = (dir, quejas+1)
         contador += 1
-        if(contador >= len(self.listaPeers)/2): #Si mas de la mitad de los peers se han quejado, lo eliminamos de la lista
+        if(contador >= len(self.listaPeers)/2) and (quejas+1>self.UMBRAL_QUEJAS): #Si mas de la mitad de los peers se han quejado de ese bloque, y entre todos los bloques superan las UMBRAL_QUEJAS peticiones, lo eliminamos de la lista
             contador = -1
             try:
-                self.listaPeers.remove(dir)
+                self.listaPeers.remove((dir,quejas+1))
                 print "Eliminado peer",dir,". Num peers:",len(self.listaPeers)
             except:
                 print "",#El peer ya ha sido eliminado
@@ -172,6 +177,13 @@ class NodoFuente:
         
         
         
+    def buscarDirecPeer(self, dir): #Busca un peer 
+        j = 0
+        for i in self.listaPeers:
+            if dir == i[0]:
+                return j
+            j += 1
+        return -1
     
     def hiloLeerIcecast(self):
         numeroBloque = 0;
@@ -194,7 +206,7 @@ class NodoFuente:
                 numeroBloque=(numeroBloque+1)%(2**16)
                 
                 try:
-                    tupla = (self.listaPeers[self.indiceDirec],(numeroBloque,msg),0) #-----------((ip,puerto),(numeroBloque,bloque),contadorQuejas)
+                    tupla = (self.listaPeers[self.indiceDirec][0],(numeroBloque,msg),0) #-----------((ip,puerto),(numeroBloque,bloque),contadorQuejas)
                 except:
                     self.indiceDirec = -1   #Evitar semaforos en la eliminacion concurrente de peers
                 self.buffer.push(numeroBloque, tupla)
@@ -202,11 +214,11 @@ class NodoFuente:
                 binario = pack(">H", numeroBloque) #Codificado como short big-endian
                 msg = binario + msg
                 try:
-                    self.socketClientesUDP.sendto(msg, (self.listaPeers[self.indiceDirec]))
+                    self.socketClientesUDP.sendto(msg, (self.listaPeers[self.indiceDirec][0]))
                 except:
                     self.indiceDirec = -1   #Evitar semaforos en la eliminacion concurrente de peers
                 #print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
-                print len(self.listaPeers), self.indiceDirec
+                print self.listaPeers
                 try:
                     self.indiceDirec = (self.indiceDirec + 1) % len(self.listaPeers) #A cada vuelta, mandamos a un peer distinto
                 except:
