@@ -140,7 +140,7 @@ class Peer:
             (leido,dir) = self.leerSocket(self.socketPerdidosUDP, self.MSGLEN) 
             (id,msg) = self.separarID(leido)
             print "Bloque perdido",id,"(indice buffer:",id%self.buffer.tam,")", "recibido"
-            self.buffer.push(id, msg)   
+            self.buffer.push(id, (id,msg))   
         
     def recibirFlujoOggUDP(self):
         ruta = self.getEscritorio(self.escribirPorTeclado())
@@ -188,10 +188,9 @@ class Peer:
                 continue
             
             
-            try:
-                (id, pop) = leido
-            except:
-                leido
+            
+            (id, pop) = leido
+            
             
             
             
@@ -206,7 +205,7 @@ class Peer:
         if(self.buffer.peekMiddle()[1] is None):
             #print "Bloque perdido",self.buffer.peekMiddle()[0],"pedido."
             num = pack(">H",self.buffer.peekMiddle()[0]%self.buffer.tam)
-            self.socketPerdidosUDP.sendto(num,self.socketSourceTCP.getpeername())
+            self.socketUDP.sendto(num,self.socketSourceTCP.getpeername())
             
     
     #def recuperarPaquetePerdido(self):

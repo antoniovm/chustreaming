@@ -138,7 +138,7 @@ class NodoFuente:
         
     def comprobarQuejas(self,tupla):
         (dir,pkg,contador) = tupla
-        if(contador > -1): #El peer ya ha sido eliminado de la lista     
+        if(contador == -1): #El peer ya ha sido eliminado de la lista     
             return tupla
         contador += 1
         if(contador >= len(self.direcPeers)/2): #Si mas de la mitad de los peers se han quejado, lo eliminamos de la lista
