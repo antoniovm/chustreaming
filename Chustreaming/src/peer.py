@@ -252,7 +252,7 @@ class Peer:
     def comprobarPaquetePerdido(self):
         if(self.buffer.peekMiddle()[1] is None):
             num = pack(">H",self.buffer.peekMiddle()[0]%self.buffer.tam)     #Numero de la posicion perdida
-            print "Bloque",self.buffer.peekMiddle()[0]%self.buffer.tam,"perdido."
+            #print "Bloque",self.buffer.peekMiddle()[0]%self.buffer.tam,"perdido."
             puerto = pack(">H", self.socketUDP.getsockname()[1])     #Paquete binario correspondiente al puerto del socket principal
             pkg = num + puerto
             self.socketPerdidosUDP.sendto(pkg,self.socketSourceTCP.getpeername())
