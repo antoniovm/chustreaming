@@ -143,7 +143,11 @@ class NodoFuente:
         contador += 1
         if(contador >= len(self.direcPeers)/2): #Si mas de la mitad de los peers se han quejado, lo eliminamos de la lista
             contador = -1
-            self.direcPeers.remove(dir)
+            try:
+                self.direcPeers.remove(dir)
+                print "Eliminado peer",dir,". Num peers:",len(self.direcPeers)
+            except:
+                print "",#El peer ya ha sido eliminado
         tupla = (dir,pkg,contador)
         return tupla
         
@@ -169,13 +173,19 @@ class NodoFuente:
             
             if len(self.direcPeers) > 0:
                 numeroBloque=(numeroBloque+1)%(2**16)
-            
-                tupla = (self.direcPeers[self.indiceDirec],(numeroBloque,msg),0) #-----------((ip,puerto),(numeroBloque,bloque),contadorQuejas) 
+                
+                try:
+                    tupla = (self.direcPeers[self.indiceDirec],(numeroBloque,msg),-10) #-----------((ip,puerto),(numeroBloque,bloque),contadorQuejas)
+                except:
+                    self.indiceDirec = -1   #Evitar semaforos en la eliminacion concurrente de peers
                 self.buffer.push(numeroBloque, tupla)
                 
                 binario = pack(">H", numeroBloque) #Codificado como short big-endian
                 msg = binario + msg
-                self.socketClientesUDP.sendto(msg, (self.direcPeers[self.indiceDirec]))
+                try:
+                    self.socketClientesUDP.sendto(msg, (self.direcPeers[self.indiceDirec]))
+                except:
+                    self.indiceDirec = -1   #Evitar semaforos en la eliminacion concurrente de peers
                 #print numeroBloque, " bloque enviado a ",self.direcPeers[self.indiceDirec] #Para mostrar cuantos bloques de bytes vamos leyendo
                 self.indiceDirec = (self.indiceDirec + 1) % len(self.direcPeers) #A cada vuelta, mandamos a un peer distinto
             
