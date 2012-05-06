@@ -111,29 +111,45 @@ class Peer:
         recv = self.socketSourceTCP.recv(2)
         numConect = unpack(">H", recv)[0]
         i = 0
-        
-        
-        ip = ""
-        puerto = 0
-        print "Peer conectado: ", numConect
+
+        print "Peers conectados: ", numConect
         
         while i < numConect:
-            (recv,dir) = self.leerSocket(self.socketSourceTCP, 12)
-            j = 0
-            while j < 4:
-                ip += str(unpack(">H", recv[j*2:(j+1)*2])[0])+"."
-                j += 1
-            ip = ip[:-1]
+            (recv,bin) = self.leerSocket(self.socketSourceTCP, 6)
             
-            puerto = unpack(">I",recv[8:12])[0]
+            dir = self.desempaquetarDireccion(bin)
             
-            self.direcPeers.append((ip,puerto))
-            print (ip,puerto)
+            self.direcPeers.append(dir)
+            print dir
             ip = ""
             
             i += 1
             
+    def empaquetarDireccion(self,(ip,puerto)):
+        sep = ip.split(".")
+        i = 0 
+        binario = ''
+        for i in sep:
+            binario += pack(">c",chr(int(i)))
+        
+        binario += pack(">H",puerto)
+        
+        return binario   
             
+    def desempaquetarDireccion(self,bin):
+        ip = ""
+        j = 0
+        print len(bin)
+        while j < 4:
+            ip += str(unpack(">c", bin[j:(j+1)])[0])+"."
+            j += 1
+        ip = ip[:-1]
+            
+        puerto = unpack(">H",bin[4:6])[0]
+        
+        return (ip, puerto)
+    
+    
     def recibirPaquetesPerdidos(self):
         print "Socket perdidos:",self.socketPerdidosUDP.getsockname()
         while True:
@@ -203,14 +219,16 @@ class Peer:
             
     def comprobarPaquetePerdido(self):
         if(self.buffer.peekMiddle()[1] is None):
-            #print "Bloque perdido",self.buffer.peekMiddle()[0],"pedido."
-            num = pack(">H",self.buffer.peekMiddle()[0]%self.buffer.tam)
-            self.socketPerdidosUDP.sendto(num,self.socketSourceTCP.getpeername())
+            
+            num = pack(">H",self.buffer.peekMiddle()[0]%self.buffer.tam)     #Numero de la posicion perdida
+            dir = self.empaquetarDireccion(self.socketUDP.getsockname())     #Paquete binario correspondiente a la direccion del socket principal
+            pkg = num + dir
+            self.socketPerdidosUDP.sendto(pkg,self.socketSourceTCP.getpeername())
             
     
-    #def recuperarPaquetePerdido(self):
-        #while True:
-            #self.socketUDP.recvfrom()
+
+        
+        
     
     def escribirPorTeclado(self):
         #return raw_input("Introduzca algo por teclado: ")

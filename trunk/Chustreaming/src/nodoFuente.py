@@ -81,22 +81,33 @@ class NodoFuente:
         socketPeer.send(tamBinario)
         print "Enviando direcciones de peers conectados"
         for i in self.direcPeers:
-            binario = self.convertirBinarioIPPuerto(i) #Convertimos la direccion en una cadena binaria para ue sea de longitud fija
+            binario = self.empaquetarDireccion(i) #Convertimos la direccion en una cadena binaria para ue sea de longitud fija
             print len(binario)
             socketPeer.send(binario)
-            
-            
-    def convertirBinarioIPPuerto(self,(ip,puerto)):
+                  
+    def empaquetarDireccion(self,(ip,puerto)):
         sep = ip.split(".")
         i = 0 
         binario = ''
         for i in sep:
-            binario += pack(">H",int(i))
+            binario += pack(">c",chr(int(i)))
         
-        binario += pack(">I",puerto)
+        binario += pack(">H",puerto)
         
         return binario        
-                        
+                       
+    def desempaquetarDireccion(self,bin):
+        ip = ""
+        j = 0
+        while j < 4:
+            ip += str(unpack(">c", bin[j:(j+1)])[0])+"."
+            j += 1
+        ip = ip[:-1]
+            
+        puerto = unpack(">H",bin[4:6])[0]
+        
+        return (ip, puerto)
+     
     def recibirCabecera(self):
         #f = open("C:\\Users\\" + "Loop" + "\\Desktop\\" + "serverBunny" + ".ogg", "w")
         i = 0
@@ -118,12 +129,15 @@ class NodoFuente:
 
     def reenvioPaquetePerdido(self):
         while True:
-            (num,dirSolic) = self.socketClientesUDP.recvfrom(2)#Recibimos el numero de posicion perdido
-            num = unpack(">H",num)[0]
+            (pkg,dirSolic) = self.socketClientesUDP.recvfrom(8)#Recibimos el numero de posicion perdido
+            num = unpack(">H",pkg[:2])[0]
+            
+            dirPrincipalSolic = self.desempaquetarDireccion(pkg[2:])        #Recibimos la direccion principal para comprobar si es un bloque suyo
+            
             print "Peticion del paquete",num, "de", dirSolic
             (dirRemitente,(numB,msg),contador) = self.buffer.index(num) #Leemos el conjunto de datos asociado al peer al que fue enviado el bloque pedido
             
-            if dirSolic != dirRemitente:
+            if dirPrincipalSolic != dirRemitente:   #Si las direcciones son iguales, se ignora la queja
                 tupla = self.comprobarQuejas((dirRemitente,(numB,msg),contador))#Comprobamos el numero de quejas del rest de peers
                 self.buffer.push(num, tupla)#Reinsertamos la tupla con los valores comprobados
             
