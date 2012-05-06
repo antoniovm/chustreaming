@@ -120,8 +120,6 @@ class Peer:
             dir = self.desempaquetarDireccion(bin)
             
             self.direcPeers.append(dir)
-            print dir
-            ip = ""
             
             i += 1
             

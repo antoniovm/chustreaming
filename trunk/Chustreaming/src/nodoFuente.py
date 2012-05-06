@@ -189,7 +189,7 @@ class NodoFuente:
                 numeroBloque=(numeroBloque+1)%(2**16)
                 
                 try:
-                    tupla = (self.direcPeers[self.indiceDirec],(numeroBloque,msg),-10) #-----------((ip,puerto),(numeroBloque,bloque),contadorQuejas)
+                    tupla = (self.direcPeers[self.indiceDirec],(numeroBloque,msg),-1) #-----------((ip,puerto),(numeroBloque,bloque),contadorQuejas)
                 except:
                     self.indiceDirec = -1   #Evitar semaforos en la eliminacion concurrente de peers
                 self.buffer.push(numeroBloque, tupla)
