@@ -22,6 +22,7 @@ class NodoFuente:
         
         self.cabecera = ""
         self.socketIcecast = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socketIcecast.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)#Para evitar la excepcion de puerto en uso 
         
         self.socketServerTCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #socket TCP cabecera Ogg
         self.socketClientesUDP = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
@@ -73,14 +74,13 @@ class NodoFuente:
             
            
         
-    def enviarPeersActuales(self, socketPeer):
-        i=0
-        
+    def enviarPeersActuales(self, socketPeer):      
         tamBinario = pack(">H",len(self.direcPeers))    #Enviamos el numero de peers que hay conectados
         print "Enviando numero de peers conectados (",len(self.direcPeers),")"
         socketPeer.send(tamBinario)
         print "Enviando direcciones de peers conectados"
         for i in self.direcPeers:
+            print i
             binario = self.empaquetarDireccion(i) #Convertimos la direccion en una cadena binaria para ue sea de longitud fija
             print len(binario)
             socketPeer.send(binario)
@@ -90,7 +90,7 @@ class NodoFuente:
         i = 0 
         binario = ''
         for i in sep:
-            binario += pack(">c",chr(int(i)))
+            binario += pack(">b",int(i))
         
         binario += pack(">H",puerto)
         
@@ -100,7 +100,7 @@ class NodoFuente:
         ip = ""
         j = 0
         while j < 4:
-            ip += str(unpack(">c", bin[j:(j+1)])[0])+"."
+            ip += str(unpack(">b", bin[j:(j+1)])[0])+"."
             j += 1
         ip = ip[:-1]
             
@@ -134,7 +134,7 @@ class NodoFuente:
             
             dirPrincipalSolic = self.desempaquetarDireccion(pkg[2:])        #Recibimos la direccion principal para comprobar si es un bloque suyo
             
-            print "Peticion del paquete",num, "de", dirSolic
+            #print "Peticion del paquete",num, "de", dirSolic
             (dirRemitente,(numB,msg),contador) = self.buffer.index(num) #Leemos el conjunto de datos asociado al peer al que fue enviado el bloque pedido
             
             if dirPrincipalSolic != dirRemitente:   #Si las direcciones son iguales, se ignora la queja
